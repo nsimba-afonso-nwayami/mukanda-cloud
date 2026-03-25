@@ -5,7 +5,7 @@ export default function Cta() {
     <section className="relative bg-slate-950 py-24 overflow-hidden">
       
       {/* Glows de Fundo Coerentes com as outras seções */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-75 bg-cyan-500/10 blur-[100px] rounded-full pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-75 bg-cyan-500/10 blur-[100px] rounded-xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
         
