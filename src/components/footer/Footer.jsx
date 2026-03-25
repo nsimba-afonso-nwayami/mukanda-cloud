@@ -47,14 +47,14 @@ export default function Footer() {
             <h3 className="text-white text-xs font-bold uppercase tracking-[0.2em] mb-2">Produto</h3>
             <Link to="/#como-funciona" className={footerLinkStyle}>Como Funciona</Link>
             <Link to="/#faq" className={footerLinkStyle}>FAQ</Link>
-            <Link to="/precos" className={footerLinkStyle}>Preços</Link>
+            <Link to="/#precos" className={footerLinkStyle}>Preços</Link>
           </div>
 
           {/* Coluna Empresa - Sem <ul> ou <li> */}
           <div className="md:col-span-2 flex flex-col gap-4">
             <h3 className="text-white text-xs font-bold uppercase tracking-[0.2em] mb-2">Empresa</h3>
-            <Link to="/quem-somos" className={footerLinkStyle}>Sobre nós</Link>
-            <Link to="/contato" className={footerLinkStyle}>Contacto</Link>
+            <Link to="/#quem-somos" className={footerLinkStyle}>Sobre nós</Link>
+            <Link to="/#contato" className={footerLinkStyle}>Contacto</Link>
           </div>
 
           {/* CTA Card */}
@@ -88,7 +88,7 @@ export default function Footer() {
               © {currentYear} Mukanda Cloud.
             </p>
             <Link to="/termos" className="text-xs text-slate-500 hover:text-cyan-400 transition">Termos</Link>
-            <Link to="/privacidade" className="text-xs text-slate-500 hover:text-cyan-400 transition">Privacidade</Link>
+            <Link to="/politica-privacidade" className="text-xs text-slate-500 hover:text-cyan-400 transition">Privacidade</Link>
           </div>
           
           <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/5 border border-green-500/10">
