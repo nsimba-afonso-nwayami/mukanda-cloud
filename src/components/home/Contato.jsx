@@ -120,7 +120,7 @@ export default function Contato() {
 
             <button
               type="button"
-              className="w-full py-4 bg-cyan-500 text-slate-950 font-black rounded-md hover:bg-cyan-300 hover:shadow-[0_10px_30px_-5px_rgba(6,182,212,0.4)] transition-all duration-300 uppercase tracking-widest text-xs"
+              className="w-full cursor-pointer py-4 bg-cyan-500 text-slate-950 font-black rounded-md hover:bg-cyan-300 hover:shadow-[0_10px_30px_-5px_rgba(6,182,212,0.4)] transition-all duration-300 uppercase tracking-widest text-xs"
             >
               Enviar Mensagem
             </button>
