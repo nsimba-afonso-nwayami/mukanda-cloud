@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
-  // Estilo refinado para os links das colunas (sem arredondamentos, apenas movimento)
-  const footerLinkStyle = "text-sm text-slate-400 hover:text-cyan-400 hover:translate-x-1 transition-all duration-300 w-fit";
+  // Estilo refinado para os links (sem arredondamentos, apenas movimento)
+  const footerLinkStyle = "text-sm text-slate-400 hover:text-cyan-400 hover:translate-x-1 transition-all duration-300 w-fit font-medium";
 
   return (
     <footer className="relative bg-slate-950 text-slate-300 border-t border-blue-900/30 overflow-hidden">
@@ -26,10 +26,10 @@ export default function Footer() {
               Mukanda<span className="text-blue-700">.</span>Cloud
             </Link>
             <p className="text-slate-400 text-sm leading-relaxed max-w-xs font-light">
-              Elevando a gestão empresarial ao próximo nível com tecnologia cloud de alta performance e simplicidade industrial.
+              Elevando a gestão empresarial ao próximo nível com tecnologia cloud de alta performance e simplicidade industrial em Angola.
             </p>
             
-            {/* Redes Sociais - Ajustadas para rounded-md (Cantos Sóbrios) */}
+            {/* Redes Sociais - Cantos Sóbrios (rounded-md) */}
             <div className="flex items-center gap-3">
               {['facebook-f', 'linkedin-in', 'instagram', 'x-twitter'].map((social) => (
                 <a 
@@ -43,21 +43,22 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Colunas de Navegação */}
-          <div className="md:col-span-2 flex flex-col gap-4">
-            <h3 className="text-white text-[10px] font-bold uppercase tracking-[0.3em] mb-4">Produto</h3>
-            <Link to="/#como-funciona" className={footerLinkStyle}>Como Funciona</Link>
-            <Link to="/#faq" className={footerLinkStyle}>FAQ</Link>
-            <Link to="/#precos" className={footerLinkStyle}>Preços</Link>
+          {/* Coluna Única de Navegação: Soluções & Suporte */}
+          <div className="md:col-span-4 flex flex-col gap-6">
+            <div className="flex flex-col gap-4">
+              <h3 className="text-white text-sm font-bold uppercase tracking-[0.2em]">Soluções Cloud</h3>
+              <Link to="/#como-funciona" className={footerLinkStyle}>Fluxo de Trabalho</Link>
+              <Link to="/#funcionalidades" className={footerLinkStyle}>Funcionalidades</Link>
+            </div>
+            
+            <div className="flex flex-col gap-4 pt-4">
+              <h3 className="text-white text-sm font-bold uppercase tracking-[0.2em]">Suporte Direto</h3>
+              <Link to="/#contato" className={footerLinkStyle}>Central de Contacto</Link>
+              <a href="mailto:suporte@mukanda.cloud" className={footerLinkStyle}>suporte@mukanda.cloud</a>
+            </div>
           </div>
 
-          <div className="md:col-span-2 flex flex-col gap-4">
-            <h3 className="text-white text-[10px] font-bold uppercase tracking-[0.3em] mb-4">Empresa</h3>
-            <Link to="/#quem-somos" className={footerLinkStyle}>Sobre nós</Link>
-            <Link to="/#contato" className={footerLinkStyle}>Contacto</Link>
-          </div>
-
-          {/* CTA Card - Ajustado para rounded-lg e Botões rounded-md */}
+          {/* CTA Card - Cantos Sóbrios (rounded-lg e rounded-md) */}
           <div className="md:col-span-4 bg-slate-900/40 border border-white/5 p-8 rounded-lg backdrop-blur-sm shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-16 h-16 bg-cyan-500/5 rotate-45 translate-x-8 -translate-y-8 border-l border-white/5" />
             
@@ -95,7 +96,7 @@ export default function Footer() {
             </div>
           </div>
           
-          {/* Status - Ajustado para Cantos Sóbrios (rounded-md) */}
+          {/* Status - Cantos Sóbrios (rounded-md) */}
           <div className="flex items-center gap-3 px-4 py-2 rounded-md bg-slate-900 border border-white/5">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
