@@ -23,17 +23,30 @@ export default function ComoFunciona() {
   ];
 
   return (
-    <section id="como-funciona" className="relative bg-slate-950 py-24 overflow-hidden">
+    <section id="como-funciona" className="relative bg-slate-950 py-32 overflow-hidden">
       
-      {/* Elementos Decorativos de Fundo (Glows) */}
-      <div className="absolute top-0 right-0 w-125 h-125 bg-blue-900/10 blur-[120px] rounded-full -z-10" />
-      <div className="absolute bottom-0 left-0 w-125 h-125 bg-cyan-500/5 blur-[120px] rounded-full -z-10" />
+      {/* Shape Divider Superior - Waves Opacity */}
+      <div className="absolute top-0 left-0 w-full overflow-hidden rotate-180 leading-0 z-20 pointer-events-none opacity-40">
+        <svg className="relative block w-full h-16 md:h-24" viewBox="0 24 150 28" preserveAspectRatio="none">
+          <defs>
+            <path id="wave-path" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+          </defs>
+          <g className="parallax-waves">
+            <use href="#wave-path" x="48" y="0" fill="rgba(6, 182, 212, 0.1)" className="animate-[wave_10s_linear_infinite]" />
+            <use href="#wave-path" x="48" y="3" fill="rgba(6, 182, 212, 0.05)" className="animate-[wave_15s_linear_infinite]" />
+          </g>
+        </svg>
+      </div>
 
-      <div className="max-w-7xl mx-auto px-6 text-center relative z-10">
+      {/* Glows Decorativos de Fundo */}
+      <div className="absolute top-1/4 right-0 w-125 h-125 bg-blue-900/10 blur-[150px] rounded-full -z-10" />
+      <div className="absolute bottom-1/4 left-0 w-125 h-125 bg-cyan-500/5 blur-[150px] rounded-full -z-10" />
+
+      <div className="max-w-7xl mx-auto px-6 text-center relative z-30">
         
         {/* Cabeçalho da Seção */}
-        <div className="space-y-4 mb-16">
-          <span className="inline-block px-4 py-1 rounded-full bg-blue-900/20 border border-blue-700/30 text-cyan-400 text-[10px] uppercase font-bold tracking-[0.3em]">
+        <div className="space-y-4 mb-20">
+          <span className="inline-block px-4 py-1.5 rounded-md bg-blue-900/20 border border-blue-700/30 text-cyan-400 text-[10px] uppercase font-bold tracking-[0.3em]">
             Workflow Inteligente
           </span>
           <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight">
@@ -49,15 +62,15 @@ export default function ComoFunciona() {
           {etapas.map((etapa) => (
             <div
               key={etapa.id}
-              className="group relative bg-slate-900/40 backdrop-blur-sm border border-blue-900/20 rounded-3xl p-10 flex flex-col items-center text-center transition-all duration-500 hover:-translate-y-2 hover:border-cyan-500/40 hover:bg-slate-900/60 shadow-xl"
+              className="group relative bg-slate-900/40 backdrop-blur-sm border border-white/5 rounded-lg p-10 flex flex-col items-center text-center transition-all duration-500 hover:-translate-y-2 hover:border-cyan-500/40 hover:bg-slate-900/60 shadow-2xl overflow-hidden"
             >
               {/* Número da Etapa Sutil */}
-              <span className="absolute top-6 right-8 text-4xl font-black text-white/5 group-hover:text-cyan-500/10 transition-colors duration-500">
+              <span className="absolute top-6 right-8 text-4xl font-black text-white/5 group-hover:text-cyan-500/10 transition-colors duration-500 italic">
                 {etapa.id}
               </span>
 
-              {/* Container do Ícone */}
-              <div className="w-20 h-20 mb-6 flex items-center justify-center rounded-2xl bg-blue-900/20 border border-blue-700/20 group-hover:border-cyan-500/50 group-hover:bg-cyan-500/10 transition-all duration-500">
+              {/* Container do Ícone com Cantos Sóbrios (rounded-md) */}
+              <div className="w-20 h-20 mb-8 flex items-center justify-center rounded-md bg-slate-950 border border-blue-900/30 group-hover:border-cyan-500/50 group-hover:bg-cyan-500/10 transition-all duration-500">
                 <i className={`${etapa.iconClass} text-cyan-500 text-3xl transition-transform duration-500 group-hover:scale-110 drop-shadow-[0_0_10px_rgba(6,182,212,0.4)]`}></i>
               </div>
 
@@ -69,25 +82,32 @@ export default function ComoFunciona() {
                 {etapa.description}
               </p>
 
-              {/* Detalhe de Brilho no Hover (Bottom Line) */}
-              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-cyan-500 transition-all duration-500 group-hover:w-1/3 group-hover:shadow-[0_0_10px_#06b6d4]" />
+              {/* Detalhe de Brilho Lateral (Estilo Industrial) */}
+              <div className="absolute top-0 left-0 w-1 h-0 bg-cyan-500 transition-all duration-500 group-hover:h-1/4" />
             </div>
           ))}
         </div>
 
-        {/* CTA de Fechamento */}
-        <div className="mt-20 flex flex-col items-center space-y-4">
+        {/* CTA de Fechamento com Cantos Sóbrios (rounded-md) */}
+        <div className="mt-24 flex flex-col items-center space-y-6">
           <Link
-            to="/criar-conta"
-            className="px-10 py-4 bg-cyan-500 text-slate-950 font-black rounded-full hover:bg-cyan-300 hover:shadow-[0_0_30px_rgba(6,182,212,0.5)] transition-all duration-300 transform hover:scale-105"
+            to="/login"
+            className="px-12 py-4 bg-cyan-500 text-slate-950 text-xs font-black rounded-md hover:bg-cyan-300 hover:shadow-[0_10px_30px_-5px_rgba(6,182,212,0.5)] transition-all duration-300 uppercase tracking-[0.2em]"
           >
             Começar Experiência Grátis
           </Link>
-          <p className="text-xs text-slate-500 font-medium uppercase tracking-widest">
-            Sem cartão de crédito • Configuração em 2 minutos
+          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em]">
+            Configuração em 2 minutos • Sem custos ocultos
           </p>
         </div>
       </div>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes wave {
+          0% { transform: translate3d(-90px, 0, 0); }
+          100% { transform: translate3d(85px, 0, 0); }
+        }
+      `}} />
     </section>
   );
 }

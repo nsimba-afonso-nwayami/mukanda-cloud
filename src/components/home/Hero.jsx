@@ -6,7 +6,7 @@ import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/effect-fade";
 
-// Imagens
+// Imagens Originais Mantidas
 import HeroImg1 from "../../assets/img/hero1.jpg";
 import HeroImg2 from "../../assets/img/hero2.jpg";
 import HeroImg3 from "../../assets/img/hero3.jpg";
@@ -27,8 +27,9 @@ export default function Hero() {
         autoplay={{ delay: 6000, disableOnInteraction: false }}
         pagination={{ 
           clickable: true,
-          bulletClass: "swiper-pagination-bullet !bg-cyan-500 !opacity-30 !w-3 !h-3 !rounded-full transition-all duration-300 cursor-pointer hover:!opacity-70",
-          bulletActiveClass: "!opacity-100 !w-10 !rounded-full" 
+          // Ajustado: Bullets Quadrados (!rounded-none)
+          bulletClass: "swiper-pagination-bullet !bg-cyan-500 !opacity-30 !w-3 !h-3 !rounded-none transition-all duration-300 cursor-pointer hover:!opacity-70",
+          bulletActiveClass: "!opacity-100 !w-10 !rounded-none" 
         }}
         loop
         className="h-full z-10"
@@ -45,11 +46,13 @@ export default function Hero() {
               
               <div className="absolute inset-0 flex items-center justify-center px-6 z-20">
                 <div className="max-w-4xl text-center space-y-5">
-                  <span className="inline-block px-4 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-[10px] uppercase font-bold tracking-[0.25em]">
+                  
+                  {/* Tag Superior Ajustada para Cantos Sóbrios (rounded-md) */}
+                  <span className="inline-block px-4 py-1 rounded-md bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-[10px] uppercase font-bold tracking-[0.25em]">
                     {slide.tag}
                   </span>
 
-                  {/* Título Ajustado: de 7xl para 5xl e de font-black para font-bold */}
+                  {/* Título Mantido conforme ajuste anterior (text-4xl md:text-5xl e font-bold) */}
                   <h1 className="text-4xl md:text-5xl font-bold text-white leading-[1.2] tracking-tight">
                     {slide.title}
                   </h1>
@@ -58,11 +61,21 @@ export default function Hero() {
                     {slide.subtitle}
                   </p>
 
-                  <div className="pt-6 flex flex-col md:flex-row gap-4 justify-center items-center">
-                    <Link to="/criar-conta" className="px-9 py-3 bg-cyan-500 text-slate-950 font-bold rounded-full hover:bg-cyan-300 transition-all shadow-[0_8px_20px_-8px_rgba(6,182,212,0.5)]">
+                  <div className="pt-8 flex flex-col md:flex-row gap-5 justify-center items-center">
+                    
+                    {/* Botão Principal Ajustado para Cantos Sóbrios (rounded-md, text-xs e tracking-widest) */}
+                    <Link 
+                      to="/criar-conta" 
+                      className="px-10 py-4 bg-cyan-500 text-slate-950 text-xs font-black rounded-md hover:bg-cyan-300 transition-all shadow-[0_8px_25px_-8px_rgba(6,182,212,0.5)] uppercase tracking-widest"
+                    >
                       Começar Agora
                     </Link>
-                    <Link to="/#como-funciona" className="px-9 py-3 border border-white/20 text-white font-medium rounded-full hover:bg-white/5 transition-all backdrop-blur-sm">
+                    
+                    {/* Botão Secundário Ajustado para Cantos Sóbrios (rounded-md, text-xs e tracking-widest) */}
+                    <Link 
+                      to="/#como-funciona" 
+                      className="px-10 py-4 border border-white/20 text-white text-xs font-black rounded-md hover:bg-white/5 transition-all backdrop-blur-sm uppercase tracking-widest"
+                    >
                       Saber Mais
                     </Link>
                   </div>
@@ -73,7 +86,7 @@ export default function Hero() {
         ))}
       </Swiper>
 
-      {/* Ondas Animadas */}
+      {/* Ondas Animadas (Mantenha o SVG original) */}
       <div className="absolute bottom-0 left-0 w-full leading-0 z-30 pointer-events-none">
         <svg className="relative block w-full h-15 md:h-25" viewBox="0 24 150 28" preserveAspectRatio="none">
           <defs>
