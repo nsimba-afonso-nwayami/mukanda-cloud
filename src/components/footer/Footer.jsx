@@ -7,7 +7,7 @@ export default function Footer() {
   const footerLinkStyle = "text-sm text-slate-400 hover:text-cyan-400 hover:translate-x-1 transition-all duration-300 w-fit";
 
   return (
-    <footer className="relative bg-slate-950 text-slate-300 border-t border-blue-900/30 mt-24 overflow-hidden">
+    <footer className="relative bg-slate-950 text-slate-300 border-t border-blue-900/30 overflow-hidden">
       {/* Linha de luz superior (Glow sutil) */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-linear-to-r from-transparent via-cyan-500/40 to-transparent" />
       
