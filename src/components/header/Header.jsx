@@ -71,6 +71,9 @@ export default function Header() {
           <HashLink to="/#contato" onClick={() => setOpen(false)} className={navLinkStyles}>
             Contato
           </HashLink>
+          <Link to="/dashboard/superadmin" onClick={() => setOpen(false)} className={navLinkStyles}>
+            Dashboard
+          </Link>
 
           {/* Botão de Login - Cantos Sóbrios */}
           <div className="w-full md:w-auto mt-6 md:mt-0 pt-6 md:pt-0 border-t md:border-0 border-white/5">
