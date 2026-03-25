@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { HashLink } from "react-router-hash-link";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
@@ -64,12 +65,12 @@ export default function Header() {
           <Link to="/" onClick={() => setOpen(false)} className={navLinkStyles}>
             Início
           </Link>
-          <Link to="/#servicos" onClick={() => setOpen(false)} className={navLinkStyles}>
-            Serviços
-          </Link>
-          <Link to="/#contato" onClick={() => setOpen(false)} className={navLinkStyles}>
+          <HashLink to="/#como-funciona" onClick={() => setOpen(false)} className={navLinkStyles}>
+            Como Funciona
+          </HashLink>
+          <HashLink to="/#contato" onClick={() => setOpen(false)} className={navLinkStyles}>
             Contato
-          </Link>
+          </HashLink>
 
           {/* Botão de Login - Cantos Sóbrios */}
           <div className="w-full md:w-auto mt-6 md:mt-0 pt-6 md:pt-0 border-t md:border-0 border-white/5">
