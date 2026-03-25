@@ -44,7 +44,7 @@ export default function Header() {
           `}
         >
           <Link to="/" onClick={() => setOpen(false)} className={navLinkStyles}>
-            Home
+            Início
           </Link>
           <Link to="/quem-somos" onClick={() => setOpen(false)} className={navLinkStyles}>
             Quem Somos
