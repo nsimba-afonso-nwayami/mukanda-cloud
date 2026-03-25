@@ -3,76 +3,78 @@ import { Link } from "react-router-dom";
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
-  // Estilo refinado para os links das colunas
+  // Estilo refinado para os links das colunas (sem arredondamentos, apenas movimento)
   const footerLinkStyle = "text-sm text-slate-400 hover:text-cyan-400 hover:translate-x-1 transition-all duration-300 w-fit";
 
   return (
     <footer className="relative bg-slate-950 text-slate-300 border-t border-blue-900/30 overflow-hidden">
-      {/* Linha de luz superior (Glow sutil) */}
+      
+      {/* Linha de luz superior (Glow sutil técnico) */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-linear-to-r from-transparent via-cyan-500/40 to-transparent" />
       
-      <div className="max-w-7xl mx-auto px-6 pt-20 pb-10">
+      <div className="max-w-7xl mx-auto px-6 pt-24 pb-12 relative z-10">
         
         {/* GRID PRINCIPAL */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-20">
 
           {/* Branding & Bio */}
-          <div className="md:col-span-4 space-y-6">
+          <div className="md:col-span-4 space-y-8">
             <Link
               to="/"
               className="text-2xl font-black tracking-tighter text-cyan-500 hover:text-cyan-300 transition-all drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]"
             >
               Mukanda<span className="text-blue-700">.</span>Cloud
             </Link>
-            <p className="text-slate-400 text-sm leading-relaxed max-w-xs">
-              Elevando a gestão empresarial ao próximo nível com tecnologia cloud de alta performance e simplicidade.
+            <p className="text-slate-400 text-sm leading-relaxed max-w-xs font-light">
+              Elevando a gestão empresarial ao próximo nível com tecnologia cloud de alta performance e simplicidade industrial.
             </p>
             
-            {/* Redes Sociais */}
-            <div className="flex items-center gap-4">
-              {['facebook', 'linkedin', 'instagram', 'twitter'].map((social) => (
+            {/* Redes Sociais - Ajustadas para rounded-md (Cantos Sóbrios) */}
+            <div className="flex items-center gap-3">
+              {['facebook-f', 'linkedin-in', 'instagram', 'x-twitter'].map((social) => (
                 <a 
                   key={social} 
                   href={`#${social}`} 
-                  className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-900/10 border border-blue-900/20 text-slate-400 hover:text-cyan-400 hover:border-cyan-500/50 transition-all duration-300 transform hover:-translate-y-1"
+                  className="w-10 h-10 flex items-center justify-center rounded-md bg-slate-900 border border-white/5 text-slate-400 hover:text-cyan-400 hover:border-cyan-500/50 transition-all duration-300 transform hover:-translate-y-1"
                 >
-                  <i className={`fab fa-${social}`}></i>
+                  <i className={`fab fa-${social} text-sm`}></i>
                 </a>
               ))}
             </div>
           </div>
 
-          {/* Coluna Produto - Sem <ul> ou <li> */}
+          {/* Colunas de Navegação */}
           <div className="md:col-span-2 flex flex-col gap-4">
-            <h3 className="text-white text-xs font-bold uppercase tracking-[0.2em] mb-2">Produto</h3>
+            <h3 className="text-white text-[10px] font-bold uppercase tracking-[0.3em] mb-4">Produto</h3>
             <Link to="/#como-funciona" className={footerLinkStyle}>Como Funciona</Link>
             <Link to="/#faq" className={footerLinkStyle}>FAQ</Link>
             <Link to="/#precos" className={footerLinkStyle}>Preços</Link>
           </div>
 
-          {/* Coluna Empresa - Sem <ul> ou <li> */}
           <div className="md:col-span-2 flex flex-col gap-4">
-            <h3 className="text-white text-xs font-bold uppercase tracking-[0.2em] mb-2">Empresa</h3>
+            <h3 className="text-white text-[10px] font-bold uppercase tracking-[0.3em] mb-4">Empresa</h3>
             <Link to="/#quem-somos" className={footerLinkStyle}>Sobre nós</Link>
             <Link to="/#contato" className={footerLinkStyle}>Contacto</Link>
           </div>
 
-          {/* CTA Card */}
-          <div className="md:col-span-4 bg-slate-900/30 border border-blue-900/20 p-6 rounded-2xl backdrop-blur-sm shadow-xl">
-            <h3 className="text-white font-bold mb-2">Pronto para escalar?</h3>
-            <p className="text-xs text-slate-400 mb-6 font-medium">Modernize sua gestão hoje mesmo.</p>
+          {/* CTA Card - Ajustado para rounded-lg e Botões rounded-md */}
+          <div className="md:col-span-4 bg-slate-900/40 border border-white/5 p-8 rounded-lg backdrop-blur-sm shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-16 h-16 bg-cyan-500/5 rotate-45 translate-x-8 -translate-y-8 border-l border-white/5" />
             
-            <div className="flex flex-col gap-3">
+            <h3 className="text-white font-bold mb-2 tracking-tight">Pronto para escalar?</h3>
+            <p className="text-[10px] text-slate-500 mb-8 font-bold uppercase tracking-widest">Modernize sua gestão hoje.</p>
+            
+            <div className="flex flex-col gap-4">
               <Link
                 to="/criar-conta"
-                className="w-full bg-cyan-500 text-slate-950 px-6 py-3 rounded-xl font-bold hover:bg-cyan-400 transition-all text-center shadow-[0_4px_14px_0_rgba(6,182,212,0.3)]"
+                className="w-full bg-cyan-500 text-slate-950 px-6 py-3.5 rounded-md font-black text-xs uppercase tracking-widest hover:bg-cyan-300 transition-all shadow-[0_8px_20px_-8px_rgba(6,182,212,0.5)] text-center"
               >
                 Criar Conta Grátis
               </Link>
               
               <Link
                 to="/login"
-                className="w-full text-center border border-blue-700/40 text-slate-300 px-6 py-3 rounded-xl font-medium hover:bg-blue-900/20 transition-all"
+                className="w-full text-center border border-white/10 text-slate-300 px-6 py-3.5 rounded-md font-bold text-xs uppercase tracking-widest hover:bg-white/5 transition-all"
               >
                 Aceder ao Painel
               </Link>
@@ -82,18 +84,24 @@ export default function Footer() {
         </div>
 
         {/* BOTTOM BAR */}
-        <div className="pt-8 border-t border-blue-900/20 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
-            <p className="text-xs text-slate-500 font-medium">
+        <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="flex flex-col md:flex-row items-center gap-4 md:gap-12">
+            <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">
               © {currentYear} Mukanda Cloud.
             </p>
-            <Link to="/termos" className="text-xs text-slate-500 hover:text-cyan-400 transition">Termos</Link>
-            <Link to="/politica-privacidade" className="text-xs text-slate-500 hover:text-cyan-400 transition">Privacidade</Link>
+            <div className="flex gap-6">
+              <Link to="/termos" className="text-[10px] text-slate-600 hover:text-cyan-400 transition uppercase tracking-widest font-bold">Termos</Link>
+              <Link to="/politica-privacidade" className="text-[10px] text-slate-600 hover:text-cyan-400 transition uppercase tracking-widest font-bold">Privacidade</Link>
+            </div>
           </div>
           
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/5 border border-green-500/10">
-            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_#22c55e]"></span>
-            <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold italic">Sistemas Online</span>
+          {/* Status - Ajustado para Cantos Sóbrios (rounded-md) */}
+          <div className="flex items-center gap-3 px-4 py-2 rounded-md bg-slate-900 border border-white/5">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500 shadow-[0_0_8px_#22c55e]"></span>
+            </span>
+            <span className="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-black italic">Sistemas Online</span>
           </div>
         </div>
 
