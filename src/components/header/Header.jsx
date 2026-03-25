@@ -46,17 +46,8 @@ export default function Header() {
           <Link to="/" onClick={() => setOpen(false)} className={navLinkStyles}>
             Início
           </Link>
-          <Link to="/quem-somos" onClick={() => setOpen(false)} className={navLinkStyles}>
-            Quem Somos
-          </Link>
           <Link to="/#como-funciona" onClick={() => setOpen(false)} className={navLinkStyles}>
             Como Funciona
-          </Link>
-          <Link to="/#precos" onClick={() => setOpen(false)} className={navLinkStyles}>
-            Preços
-          </Link>
-          <Link to="/#faq" onClick={() => setOpen(false)} className={navLinkStyles}>
-            FAQ
           </Link>
           <Link to="/#contato" onClick={() => setOpen(false)} className={navLinkStyles}>
             Contato
