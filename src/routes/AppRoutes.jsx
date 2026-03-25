@@ -18,6 +18,10 @@ import Cadastrar from "../pages/auth/Cadastrar";
 import RecuperarSenha from "../pages/auth/RecuperarSenha";
 import ResetSenha from "../pages/auth/ResetSenha";
 
+//Dashboard Super Admin
+import DashboardSuperAdmin from "../pages/superadmin/DashboardSuperAdmin";
+import NotFoundSuperAdmin from "../pages/superadmin/NotFoundSuperAdmin";
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -34,6 +38,12 @@ export default function AppRoutes() {
       <Route path="/criar-conta" element={<Cadastrar />} />
       <Route path="/recuperar-senha" element={<RecuperarSenha />} />
       <Route path="/reset-senha" element={<ResetSenha />} />
+
+      {/*Rotas do suoer admin */}
+      <Route path="/dashboard/superadmin/">
+          <Route path="" element={<DashboardSuperAdmin />} />
+          <Route path="*" element={<NotFoundSuperAdmin />} />
+      </Route>
 
     </Routes>
   );
