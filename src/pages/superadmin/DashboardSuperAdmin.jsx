@@ -25,7 +25,7 @@ export default function DashboardSuperAdmin() {
   const stats = [
     { id: 1, title: "Total de Arquivos", value: 1240, icon: "fas fa-file" },
     { id: 2, title: "Armazenamento", value: "32GB / 100GB", icon: "fas fa-database" },
-    { id: 3, title: "Usuários", value: 18, icon: "fas fa-users" },
+    { id: 3, title: "Equipa", value: 18, icon: "fas fa-users" },
     { id: 4, title: "Departamentos", value: 5, icon: "fas fa-building" },
   ];
 
