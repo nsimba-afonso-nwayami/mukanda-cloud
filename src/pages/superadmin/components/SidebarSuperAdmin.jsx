@@ -64,9 +64,9 @@ export default function SidebarSuperAdmin({ sidebarOpen, setSidebarOpen }) {
               Departamentos
             </Link>
 
-            <Link to="/dashboard/superadmin/usuarios" className={linkStyle}>
+            <Link to="/dashboard/superadmin/equipa" className={linkStyle}>
               <i className="fas fa-users text-blue-700"></i>
-              Usuários
+              Equipa
             </Link>
 
             <Link to="/dashboard/superadmin/atividades" className={linkStyle}>
