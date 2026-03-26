@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import SuperAdminLayout from "./components/SuperAdminLayout";
 import ModalSmall from "./components/ModalSmall";
 
@@ -123,6 +123,23 @@ export default function ArquivosSuperAdmin() {
   const handleTouchEnd = (timer) => {
     clearTimeout(timer);
   };
+
+  // Fechar context menu ao clicar fora (desktop e mobile)
+  useEffect(() => {
+    if (!contextMenu) return; // só adiciona listener se o menu estiver aberto
+
+    const handleClickOutside = () => {
+      closeContextMenu();
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [contextMenu]);
 
   return (
     <>
