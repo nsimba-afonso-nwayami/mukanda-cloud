@@ -23,6 +23,7 @@ import DashboardSuperAdmin from "../pages/superadmin/DashboardSuperAdmin";
 import ArquivosSuperAdmin from "../pages/superadmin/ArquivosSuperAdmin";
 import DepartamentosSuperAdmin from "../pages/superadmin/DepartamentosSuperAdmin";
 import EquipaSuperAdmin from "../pages/superadmin/EquipaSuperAdmin";
+import PermissoesSuperAdmin from "../pages/superadmin/PermissoesSuperAdmin";
 import AtividadesSuperAdmin from "../pages/superadmin/AtividadesSuperAdmin";
 import ConfigSuperAdmin from "../pages/superadmin/ConfigSuperAdmin";
 import NotFoundSuperAdmin from "../pages/superadmin/NotFoundSuperAdmin";
@@ -50,6 +51,7 @@ export default function AppRoutes() {
           <Route path="arquivos" element={<ArquivosSuperAdmin />} />
           <Route path="departamentos" element={<DepartamentosSuperAdmin />} />
           <Route path="equipa" element={<EquipaSuperAdmin />} />
+          <Route path="permissoes" element={<PermissoesSuperAdmin />} />
           <Route path="atividades" element={<AtividadesSuperAdmin />} />
           <Route path="configuracoes" element={<ConfigSuperAdmin />} />
           <Route path="*" element={<NotFoundSuperAdmin />} />
