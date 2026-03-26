@@ -23,6 +23,20 @@ export default function ArquivosSuperAdmin() {
     { id: 3, name: "Imagem.png", type: "image", parent: "Home", url: "/img/teste.png" },
   ]);
 
+  const [permissoes, setPermissoes] = useState({
+    ler: true,
+    escrever: false,
+    executar: false,
+    apagar: false,
+  });
+
+  const togglePermissao = (key) => {
+    setPermissoes((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
   const currentFolder = currentPath[currentPath.length - 1];
   const arquivosFiltrados = arquivos.filter((a) => a.parent === currentFolder);
 
@@ -293,6 +307,56 @@ export default function ArquivosSuperAdmin() {
             placeholder="Nome da pasta"
             className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-4"
           />
+
+          <div className="bg-slate-800 border border-blue-900 rounded-lg p-4">
+            <p className="text-sm text-slate-400 mb-3 uppercase tracking-wider">
+              Permissões
+            </p>
+
+            <div className="grid grid-cols-2 gap-3 text-sm">
+
+              <label className="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-cyan-400 transition">
+                <input
+                  type="checkbox"
+                  checked={permissoes.ler}
+                  onChange={() => togglePermissao("ler")}
+                  className="accent-cyan-500 cursor-pointer"
+                />
+                Ler
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-cyan-400 transition">
+                <input
+                  type="checkbox"
+                  checked={permissoes.escrever}
+                  onChange={() => togglePermissao("escrever")}
+                  className="accent-cyan-500 cursor-pointer"
+                />
+                Escrever
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-cyan-400 transition">
+                <input
+                  type="checkbox"
+                  checked={permissoes.executar}
+                  onChange={() => togglePermissao("executar")}
+                  className="accent-cyan-500 cursor-pointer"
+                />
+                Executar
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-cyan-400 transition">
+                <input
+                  type="checkbox"
+                  checked={permissoes.apagar}
+                  onChange={() => togglePermissao("apagar")}
+                  className="accent-cyan-500 cursor-pointer"
+                />
+                Apagar
+              </label>
+
+            </div>
+          </div>
           <button
             onClick={handleCriarPasta}
             className="w-full py-2 bg-cyan-500 text-slate-900 font-semibold rounded-lg cursor-pointer"
