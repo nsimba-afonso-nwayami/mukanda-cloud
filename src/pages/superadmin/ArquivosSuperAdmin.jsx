@@ -42,6 +42,7 @@ export default function ArquivosSuperAdmin() {
   const handleOpen = (item) => {
     if (item.type === "folder") setCurrentPath([...currentPath, item.name]);
     else setPreviewFile(item);
+    closeContextMenu();
   };
 
   // Breadcrumb
@@ -83,7 +84,9 @@ export default function ArquivosSuperAdmin() {
   const handleDragStart = (item) => (dragItem.current = item);
   const handleDropOnFolder = (folder) => {
     setArquivos((prev) =>
-      prev.map((item) => (item.id === dragItem.current.id ? { ...item, parent: folder.name } : item))
+      prev.map((item) =>
+        item.id === dragItem.current.id ? { ...item, parent: folder.name } : item
+      )
     );
   };
 
@@ -95,6 +98,7 @@ export default function ArquivosSuperAdmin() {
     const y = Math.min(e.pageY, window.innerHeight - 120);
     setContextMenu({ x, y });
   };
+
   const closeContextMenu = () => setContextMenu(null);
 
   // Renomear
@@ -119,17 +123,16 @@ export default function ArquivosSuperAdmin() {
     }, 600); // 600ms toque longo
     return timer;
   };
-
-  const handleTouchEnd = (timer) => {
-    clearTimeout(timer);
-  };
+  const handleTouchEnd = (timer) => clearTimeout(timer);
 
   // Fechar context menu ao clicar fora (desktop e mobile)
   useEffect(() => {
-    if (!contextMenu) return; // só adiciona listener se o menu estiver aberto
+    if (!contextMenu) return;
 
-    const handleClickOutside = () => {
-      closeContextMenu();
+    const handleClickOutside = (e) => {
+      if (!e.target.closest(".context-menu")) {
+        closeContextMenu();
+      }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -146,7 +149,6 @@ export default function ArquivosSuperAdmin() {
       <title>Arquivos | Mukanda Cloud</title>
 
       <SuperAdminLayout title="Arquivos">
-
         {/* Breadcrumb */}
         <div className="flex flex-wrap items-center gap-2 text-sm text-slate-400 mb-4">
           {currentPath.map((p, i) => (
@@ -201,10 +203,7 @@ export default function ArquivosSuperAdmin() {
         )}
 
         {/* Grid */}
-        <div
-          onClick={closeContextMenu}
-          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4"
-        >
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
           {arquivosFiltrados.map((item) => (
             <div
               key={item.id}
@@ -237,8 +236,8 @@ export default function ArquivosSuperAdmin() {
         {/* Context Menu */}
         {contextMenu && (
           <div
+            className="context-menu fixed z-9999 bg-slate-900 border border-blue-900 rounded-lg w-36 sm:w-40 shadow-lg"
             style={{ top: contextMenu.y, left: contextMenu.x }}
-            className="fixed z-9999 bg-slate-900 border border-blue-900 rounded-lg w-36 sm:w-40 shadow-lg"
           >
             <button
               onClick={() => handleOpen(selectedItem)}
@@ -246,7 +245,6 @@ export default function ArquivosSuperAdmin() {
             >
               Abrir
             </button>
-
             <button
               onClick={() => {
                 setRenameValue(selectedItem.name);
@@ -257,7 +255,6 @@ export default function ArquivosSuperAdmin() {
             >
               Renomear
             </button>
-
             <button
               onClick={() => {
                 setDeleteModal(true);
@@ -270,27 +267,27 @@ export default function ArquivosSuperAdmin() {
           </div>
         )}
 
-        {/* Modal Nova Pasta */}
+        {/* Modais */}
         <ModalSmall
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          title="Nova Pasta"
+          title="Criar Nova Pasta"
           icon="fas fa-folder-plus"
         >
           <input
             value={novaPasta}
             onChange={(e) => setNovaPasta(e.target.value)}
+            placeholder="Nome da pasta"
             className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-4"
           />
           <button
             onClick={handleCriarPasta}
-            className="w-full py-2 bg-cyan-500 text-slate-900 rounded-lg cursor-pointer"
+            className="w-full py-2 bg-cyan-500 text-slate-900 font-semibold rounded-lg cursor-pointer"
           >
-            Criar
+            Criar Pasta
           </button>
         </ModalSmall>
 
-        {/* Modal Renomear */}
         <ModalSmall
           isOpen={renameModal}
           onClose={() => setRenameModal(false)}
@@ -310,7 +307,6 @@ export default function ArquivosSuperAdmin() {
           </button>
         </ModalSmall>
 
-        {/* Modal Deletar */}
         <ModalSmall
           isOpen={deleteModal}
           onClose={() => setDeleteModal(false)}
@@ -325,7 +321,6 @@ export default function ArquivosSuperAdmin() {
           </button>
         </ModalSmall>
 
-        {/* Modal Preview */}
         <ModalSmall
           isOpen={!!previewFile}
           onClose={() => setPreviewFile(null)}
@@ -338,11 +333,9 @@ export default function ArquivosSuperAdmin() {
               className="rounded-lg w-full max-h-[70vh] object-contain"
             />
           )}
-
           {previewFile?.type === "pdf" && (
-            <div className="flex flex-col items-center">
-              {/* Detecta mobile */}
-              {window.innerWidth < 768 ? (
+            <div className="flex flex-col items-center w-full">
+              {typeof window !== "undefined" && window.innerWidth < 768 ? (
                 <a
                   href={previewFile.url}
                   target="_blank"
@@ -352,15 +345,11 @@ export default function ArquivosSuperAdmin() {
                   Abrir PDF
                 </a>
               ) : (
-                <iframe
-                  src={previewFile.url}
-                  className="w-full h-[70vh]"
-                ></iframe>
+                <iframe src={previewFile.url} className="w-full h-[70vh]"></iframe>
               )}
             </div>
           )}
         </ModalSmall>
-
       </SuperAdminLayout>
     </>
   );
