@@ -17,7 +17,7 @@ export default function Modal({ isOpen, onClose, title, icon, children }) {
   return createPortal(
     <div
       className={`
-        fixed inset-0 z-[9999] flex items-center justify-center
+        fixed inset-0 z-9999 flex items-center justify-center px-4
         bg-slate-950/80 backdrop-blur
         transition-opacity duration-300
         ${isOpen ? "opacity-100" : "opacity-0"}
@@ -26,7 +26,7 @@ export default function Modal({ isOpen, onClose, title, icon, children }) {
       {/* Modal */}
       <div
         className={`
-          w-full max-w-3xl mx-4
+          w-full max-w-3xl
           bg-slate-900 border border-blue-900/40
           rounded-xl shadow-[0_0_40px_rgba(0,0,0,0.6)]
           transform transition-all duration-300

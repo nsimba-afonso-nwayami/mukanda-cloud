@@ -14,10 +14,9 @@ export default function ModalSmall({ isOpen, onClose, title, icon, children }) {
 
   if (!show) return null;
 
-  // Portal renderiza no body para garantir que fique acima do sidebar e header
   return createPortal(
     <div
-      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${
+      className={`fixed inset-0 z-9999 flex items-center justify-center px-4 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${
         isOpen ? "opacity-100" : "opacity-0"
       }`}
     >
@@ -35,7 +34,9 @@ export default function ModalSmall({ isOpen, onClose, title, icon, children }) {
               <i className={icon}></i>
             </div>
           )}
+
           <h2 className="text-lg font-bold text-cyan-500">{title}</h2>
+
           <button
             onClick={onClose}
             className="ml-auto cursor-pointer text-slate-400 hover:text-cyan-500 text-2xl font-bold transition-colors"
