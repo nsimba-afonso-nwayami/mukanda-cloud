@@ -38,9 +38,9 @@ export default function SidebarSuperAdmin({ sidebarOpen, setSidebarOpen }) {
 
         {/* Cabeçalho */}
         <div className="flex-1">
-          <h1 className="text-xl font-black tracking-tight text-cyan-500 drop-shadow-[0_0_6px_rgba(6,182,212,0.5)]">
+          <Link to="/" className="text-xl font-black tracking-tight text-cyan-500 drop-shadow-[0_0_6px_rgba(6,182,212,0.5)]">
             Mukanda<span className="text-blue-700">.</span>Cloud
-          </h1>
+          </Link>
 
           <p className="text-xs text-slate-500 mt-1 mb-8 uppercase tracking-wider">
             Painel Administrativo
