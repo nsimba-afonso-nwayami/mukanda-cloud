@@ -69,6 +69,11 @@ export default function SidebarSuperAdmin({ sidebarOpen, setSidebarOpen }) {
               Equipa
             </Link>
 
+            <Link to="/dashboard/superadmin/permissoes" className={linkStyle}>
+              <i className="fas fa-shield-alt text-blue-700"></i>
+              Permissões
+            </Link>
+
             <Link to="/dashboard/superadmin/atividades" className={linkStyle}>
               <i className="fas fa-clock-rotate-left text-blue-700"></i>
               Atividades
