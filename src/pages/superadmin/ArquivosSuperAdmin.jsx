@@ -323,10 +323,24 @@ export default function ArquivosSuperAdmin() {
           )}
 
           {previewFile?.type === "pdf" && (
-            <iframe
-              src={previewFile.url}
-              className="w-full h-[70vh]"
-            ></iframe>
+            <div className="flex flex-col items-center">
+              {/* Detecta mobile */}
+              {window.innerWidth < 768 ? (
+                <a
+                  href={previewFile.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 bg-cyan-500 text-slate-900 rounded-lg cursor-pointer"
+                >
+                  Abrir PDF
+                </a>
+              ) : (
+                <iframe
+                  src={previewFile.url}
+                  className="w-full h-[70vh]"
+                ></iframe>
+              )}
+            </div>
           )}
         </ModalSmall>
 
