@@ -15,6 +15,7 @@ export default function AtividadesSuperAdmin() {
   const [filtroUsuario, setFiltroUsuario] = useState("");
   const [filtroDepartamento, setFiltroDepartamento] = useState("");
   const [filtroData, setFiltroData] = useState("");
+  const [pesquisa, setPesquisa] = useState("");
   const [verMais, setVerMais] = useState(false);
 
   const departamentos = ["Financeiro", "RH", "TI"];
@@ -26,7 +27,8 @@ export default function AtividadesSuperAdmin() {
       const matchUsuario = filtroUsuario ? a.usuario === filtroUsuario : true;
       const matchDep = filtroDepartamento ? a.departamento === filtroDepartamento : true;
       const matchData = filtroData ? a.data.split(" ")[0] === filtroData : true;
-      return matchUsuario && matchDep && matchData;
+      const matchPesquisa = pesquisa ? a.acao.toLowerCase().includes(pesquisa.toLowerCase()) : true;
+      return matchUsuario && matchDep && matchData && matchPesquisa;
     })
     .sort((a, b) => new Date(b.data) - new Date(a.data)); // Decrescente
 
@@ -48,32 +50,40 @@ export default function AtividadesSuperAdmin() {
       <SuperAdminLayout title="Atividades">
 
         {/* Filtros responsivos */}
-        <div className="flex flex-col sm:flex-row gap-2 mb-4">
-          <select
-            value={filtroUsuario}
-            onChange={(e) => setFiltroUsuario(e.target.value)}
-            className="p-3 bg-slate-800 border border-blue-900 text-white rounded-lg w-full sm:w-auto"
-          >
-            <option value="">Todos os usuários</option>
-            {usuarios.map(u => <option key={u} value={u}>{u}</option>)}
-          </select>
+        <div className="flex flex-col gap-2 md:flex-row md:gap-2 mb-4">
+  <input
+    type="text"
+    placeholder="Pesquisar ações..."
+    value={pesquisa}
+    onChange={(e) => setPesquisa(e.target.value)}
+    className="p-3 bg-slate-800 border border-blue-900 text-white rounded-lg w-full"
+  />
 
-          <select
-            value={filtroDepartamento}
-            onChange={(e) => setFiltroDepartamento(e.target.value)}
-            className="p-3 bg-slate-800 border border-blue-900 text-white rounded-lg w-full sm:w-auto"
-          >
-            <option value="">Todos os departamentos</option>
-            {departamentos.map(d => <option key={d} value={d}>{d}</option>)}
-          </select>
+  <select
+    value={filtroUsuario}
+    onChange={(e) => setFiltroUsuario(e.target.value)}
+    className="p-3 bg-slate-800 border border-blue-900 text-white rounded-lg w-full md:w-auto"
+  >
+    <option value="">Todos os usuários</option>
+    {usuarios.map(u => <option key={u} value={u}>{u}</option>)}
+  </select>
 
-          <input
-            type="date"
-            value={filtroData}
-            onChange={(e) => setFiltroData(e.target.value)}
-            className="p-3 bg-slate-800 border border-blue-900 text-white rounded-lg w-full sm:w-auto"
-          />
-        </div>
+  <select
+    value={filtroDepartamento}
+    onChange={(e) => setFiltroDepartamento(e.target.value)}
+    className="p-3 bg-slate-800 border border-blue-900 text-white rounded-lg w-full md:w-auto"
+  >
+    <option value="">Todos os departamentos</option>
+    {departamentos.map(d => <option key={d} value={d}>{d}</option>)}
+  </select>
+
+  <input
+    type="date"
+    value={filtroData}
+    onChange={(e) => setFiltroData(e.target.value)}
+    className="p-3 bg-slate-800 border border-blue-900 text-white rounded-lg w-full md:w-auto"
+  />
+</div>
 
         {/* Lista de atividades */}
         <div className="space-y-6">
