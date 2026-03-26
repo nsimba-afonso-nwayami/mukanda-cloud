@@ -111,6 +111,19 @@ export default function ArquivosSuperAdmin() {
     setDeleteModal(false);
   };
 
+  // Mobile: abrir menu de contexto via toque longo
+  const handleTouchStart = (item) => {
+    const timer = setTimeout(() => {
+      setSelectedItem(item);
+      setContextMenu({ x: window.innerWidth / 2 - 80, y: window.innerHeight / 2 - 60 });
+    }, 600); // 600ms toque longo
+    return timer;
+  };
+
+  const handleTouchEnd = (timer) => {
+    clearTimeout(timer);
+  };
+
   return (
     <>
       <title>Arquivos | Mukanda Cloud</title>
@@ -184,6 +197,8 @@ export default function ArquivosSuperAdmin() {
               onContextMenu={(e) => handleContextMenu(e, item)}
               onDrop={() => item.type === "folder" && handleDropOnFolder(item)}
               onDragOver={(e) => e.preventDefault()}
+              onTouchStart={() => (item.touchTimer = handleTouchStart(item))}
+              onTouchEnd={() => handleTouchEnd(item.touchTimer)}
               className="bg-slate-900 border border-blue-900 rounded-xl p-4 cursor-pointer hover:border-cyan-500 flex flex-col items-center"
             >
               <div className="flex justify-center mb-2">
@@ -206,7 +221,7 @@ export default function ArquivosSuperAdmin() {
         {contextMenu && (
           <div
             style={{ top: contextMenu.y, left: contextMenu.x }}
-            className="fixed z-[9999] bg-slate-900 border border-blue-900 rounded-lg w-36 sm:w-40 shadow-lg"
+            className="fixed z-9999 bg-slate-900 border border-blue-900 rounded-lg w-36 sm:w-40 shadow-lg"
           >
             <button
               onClick={() => handleOpen(selectedItem)}
