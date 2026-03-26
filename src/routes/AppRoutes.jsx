@@ -20,6 +20,7 @@ import ResetSenha from "../pages/auth/ResetSenha";
 
 //Dashboard Super Admin
 import DashboardSuperAdmin from "../pages/superadmin/DashboardSuperAdmin";
+import ArquivosSuperAdmin from "../pages/superadmin/ArquivosSuperAdmin";
 import NotFoundSuperAdmin from "../pages/superadmin/NotFoundSuperAdmin";
 
 export default function AppRoutes() {
@@ -42,6 +43,7 @@ export default function AppRoutes() {
       {/*Rotas do suoer admin */}
       <Route path="/dashboard/superadmin/">
           <Route path="" element={<DashboardSuperAdmin />} />
+          <Route path="arquivos" element={<ArquivosSuperAdmin />} />
           <Route path="*" element={<NotFoundSuperAdmin />} />
       </Route>
 
