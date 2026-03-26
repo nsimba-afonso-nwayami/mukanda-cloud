@@ -22,11 +22,11 @@ export default function DashboardGerente() {
     }));
   };
 
+  // ✅ Ajustado aqui
   const stats = [
     { id: 1, title: "Total de Arquivos", value: 1240, icon: "fas fa-file" },
     { id: 2, title: "Armazenamento", value: "32GB / 100GB", icon: "fas fa-database" },
-    { id: 3, title: "Usuários", value: 18, icon: "fas fa-users" },
-    { id: 4, title: "Departamentos", value: 5, icon: "fas fa-building" },
+    { id: 3, title: "Equipa", value: 18, icon: "fas fa-users" }, // ALTERADO
   ];
 
   const atividades = [
@@ -60,7 +60,8 @@ export default function DashboardGerente() {
     <>
       <title>Dashboard | Mukanda Cloud</title>
 
-      <GerenteLayout title="Dashboard SuperAdmin">
+      {/* ✅ Corrigido título */}
+      <GerenteLayout title="Dashboard Gerente">
 
         {/* BOTÃO NOVA PASTA */}
         <div className="flex justify-end mb-4">
@@ -74,7 +75,8 @@ export default function DashboardGerente() {
         </div>
 
         {/* STATS */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* ✅ Ajustado grid para 3 cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {stats.map((stat) => (
             <div
               key={stat.id}
@@ -135,7 +137,7 @@ export default function DashboardGerente() {
             </ul>
 
             <Link
-              to="/dashboard/superadmin/arquivos"
+              to="/dashboard/gerente/arquivos"
               className="mt-4 inline-block text-sm font-semibold text-cyan-500 hover:text-cyan-300 transition"
             >
               Ver todos →
@@ -152,7 +154,6 @@ export default function DashboardGerente() {
         >
           <div className="flex flex-col gap-4">
 
-            {/* Nome */}
             <input
               type="text"
               placeholder="Nome da pasta"
@@ -161,13 +162,11 @@ export default function DashboardGerente() {
               className="p-3 rounded-lg bg-slate-800 text-white border border-blue-900 focus:border-cyan-500 focus:outline-none"
             />
 
-            {/* Permissões */}
             <div className="bg-slate-800 border border-blue-900 rounded-lg p-4">
               <p className="text-sm text-slate-400 mb-3 uppercase tracking-wider">
                 Permissões
               </p>
 
-              {/* Permissões */}
               <div className="bg-slate-800 border border-blue-900 rounded-lg p-4">
                 <p className="text-sm text-slate-400 mb-3 uppercase tracking-wider">
                   Permissões
@@ -175,51 +174,25 @@ export default function DashboardGerente() {
 
                 <div className="grid grid-cols-2 gap-3 text-sm">
 
-                  <label className="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-cyan-400 transition">
-                    <input
-                      type="checkbox"
-                      checked={permissoes.ler}
-                      onChange={() => togglePermissao("ler")}
-                      className="accent-cyan-500 cursor-pointer"
-                    />
-                    Ler
-                  </label>
-
-                  <label className="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-cyan-400 transition">
-                    <input
-                      type="checkbox"
-                      checked={permissoes.escrever}
-                      onChange={() => togglePermissao("escrever")}
-                      className="accent-cyan-500 cursor-pointer"
-                    />
-                    Escrever
-                  </label>
-
-                  <label className="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-cyan-400 transition">
-                    <input
-                      type="checkbox"
-                      checked={permissoes.executar}
-                      onChange={() => togglePermissao("executar")}
-                      className="accent-cyan-500 cursor-pointer"
-                    />
-                    Executar
-                  </label>
-
-                  <label className="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-cyan-400 transition">
-                    <input
-                      type="checkbox"
-                      checked={permissoes.apagar}
-                      onChange={() => togglePermissao("apagar")}
-                      className="accent-cyan-500 cursor-pointer"
-                    />
-                    Apagar
-                  </label>
+                  {["ler","escrever","executar","apagar"].map((perm) => (
+                    <label
+                      key={perm}
+                      className="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-cyan-400 transition"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={permissoes[perm]}
+                        onChange={() => togglePermissao(perm)}
+                        className="accent-cyan-500 cursor-pointer"
+                      />
+                      {perm.charAt(0).toUpperCase() + perm.slice(1)}
+                    </label>
+                  ))}
 
                 </div>
               </div>
             </div>
 
-            {/* Botão */}
             <button
               onClick={handleCriarPasta}
               className="px-4 py-2 cursor-pointer bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold rounded-lg transition"

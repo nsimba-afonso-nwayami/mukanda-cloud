@@ -23,11 +23,11 @@ export default function EquipaGerente() {
   const [contextMenu, setContextMenu] = useState(null);
 
   const [novoUsuario, setNovoUsuario] = useState({
-    nome: "", email: "", telefone: "", senha: "", departamento: "", nivel: "Staff"
+    nome: "", email: "", telefone: "", senha: "", departamento: "", nivel: "Staff" // ✅ fixo como Staff
   });
 
   const [editUser, setEditUser] = useState({
-    nome: "", email: "", telefone: "", departamento: "", nivel: ""
+    nome: "", email: "", telefone: "", departamento: ""
   });
 
   const [novaSenha, setNovaSenha] = useState("");
@@ -66,9 +66,7 @@ export default function EquipaGerente() {
     closeContextMenu();
   };
 
-  // =============================
   // Context menu
-  // =============================
   const handleContextMenu = (e, user) => {
     e.preventDefault();
     setSelectedUser(user);
@@ -78,9 +76,7 @@ export default function EquipaGerente() {
   };
   const closeContextMenu = () => setContextMenu(null);
 
-  // =============================
   // Mobile: toque longo
-  // =============================
   const handleTouchStart = (user) => {
     const timer = setTimeout(() => {
       setSelectedUser(user);
@@ -145,7 +141,11 @@ export default function EquipaGerente() {
           <div className="context-menu fixed z-9999 bg-slate-900 border border-blue-900 rounded-lg w-36 sm:w-44 shadow-lg"
             style={{ top: contextMenu.y, left: contextMenu.x }}>
             <button onClick={() => handlePreview(selectedUser)} className="block px-4 py-2 hover:bg-slate-800 w-full text-left cursor-pointer">Preview</button>
-            <button onClick={() => { setEditUser({ nome: selectedUser.nome, email: selectedUser.email, telefone: selectedUser.telefone, departamento: selectedUser.departamento, nivel: selectedUser.nivel }); setEditModal(true); closeContextMenu(); }} className="block px-4 py-2 hover:bg-slate-800 w-full text-left cursor-pointer">Editar Dados</button>
+            <button onClick={() => { 
+              setEditUser({ nome: selectedUser.nome, email: selectedUser.email, telefone: selectedUser.telefone, departamento: selectedUser.departamento });
+              setEditModal(true); 
+              closeContextMenu(); 
+            }} className="block px-4 py-2 hover:bg-slate-800 w-full text-left cursor-pointer">Editar Dados</button>
             <button onClick={() => { setNovaSenha(""); setSenhaModal(true); closeContextMenu(); }} className="block px-4 py-2 hover:bg-slate-800 w-full text-left cursor-pointer">Editar Senha</button>
             <button onClick={() => { setDeleteModal(true); closeContextMenu(); }} className="block px-4 py-2 text-red-400 hover:bg-slate-800 w-full text-left cursor-pointer">Excluir</button>
           </div>
@@ -157,14 +157,11 @@ export default function EquipaGerente() {
           <input value={novoUsuario.email} onChange={(e) => setNovoUsuario({ ...novoUsuario, email: e.target.value })} placeholder="Email" className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-2"/>
           <input value={novoUsuario.telefone} onChange={(e) => setNovoUsuario({ ...novoUsuario, telefone: e.target.value })} placeholder="Telefone" className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-2"/>
           <input type="password" value={novoUsuario.senha} onChange={(e) => setNovoUsuario({ ...novoUsuario, senha: e.target.value })} placeholder="Senha" className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-2"/>
-          <select value={novoUsuario.departamento} onChange={(e) => setNovoUsuario({ ...novoUsuario, departamento: e.target.value })} className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-2">
+          <select value={novoUsuario.departamento} onChange={(e) => setNovoUsuario({ ...novoUsuario, departamento: e.target.value })} className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-4">
             <option value="">Selecionar Departamento</option>
             {departamentos.map(dep => <option key={dep.id} value={dep.nome}>{dep.nome}</option>)}
           </select>
-          <select value={novoUsuario.nivel} onChange={(e) => setNovoUsuario({ ...novoUsuario, nivel: e.target.value })} className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-4">
-            <option value="Gerente">Gerente</option>
-            <option value="Staff">Staff</option>
-          </select>
+          {/* ❌ Removido select de nível */}
           <button onClick={handleCriarUsuario} className="w-full py-2 bg-cyan-500 text-slate-900 font-semibold rounded-lg cursor-pointer">Adicionar</button>
         </ModalSmall>
 
@@ -173,12 +170,8 @@ export default function EquipaGerente() {
           <input value={editUser.nome} onChange={(e) => setEditUser({ ...editUser, nome: e.target.value })} placeholder="Nome" className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-2"/>
           <input value={editUser.email} onChange={(e) => setEditUser({ ...editUser, email: e.target.value })} placeholder="Email" className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-2"/>
           <input value={editUser.telefone} onChange={(e) => setEditUser({ ...editUser, telefone: e.target.value })} placeholder="Telefone" className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-2"/>
-          <select value={editUser.departamento} onChange={(e) => setEditUser({ ...editUser, departamento: e.target.value })} className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-2">
+          <select value={editUser.departamento} onChange={(e) => setEditUser({ ...editUser, departamento: e.target.value })} className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-4">
             {departamentos.map(dep => <option key={dep.id} value={dep.nome}>{dep.nome}</option>)}
-          </select>
-          <select value={editUser.nivel} onChange={(e) => setEditUser({ ...editUser, nivel: e.target.value })} className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-4">
-            <option value="Gerente">Gerente</option>
-            <option value="Staff">Staff</option>
           </select>
           <button onClick={handleEditarUsuario} className="w-full py-2 bg-cyan-500 text-slate-900 font-semibold rounded-lg cursor-pointer">Salvar Alterações</button>
         </ModalSmall>
