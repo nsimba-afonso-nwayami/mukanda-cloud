@@ -12,7 +12,8 @@ export default function ArquivosSuperAdmin() {
   const [deleteModal, setDeleteModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [renameValue, setRenameValue] = useState("");
-  const [uploadProgress, setUploadProgress] = useState(0);
+  
+  const [uploadQueue, setUploadQueue] = useState([]);
 
   const dragItem = useRef();
 
@@ -49,31 +50,44 @@ export default function ArquivosSuperAdmin() {
   const goToPath = (index) => setCurrentPath(currentPath.slice(0, index + 1));
 
   // =============================
-  // Upload com progress (atualizado)
+  // Upload múltiplo com progresso individual
   // =============================
   const handleUpload = (files, folder = currentFolder) => {
-    const file = files[0];
-    let progress = 0;
+    const filesArray = Array.from(files);
+    const newQueue = filesArray.map((file) => ({
+      id: Date.now() + Math.random(),
+      file,
+      progress: 0,
+    }));
 
-    const interval = setInterval(() => {
-      progress += 10;
-      setUploadProgress(progress);
+    setUploadQueue((prev) => [...prev, ...newQueue]);
 
-      if (progress >= 100) {
-        clearInterval(interval);
-        setArquivos((prev) => [
-          ...prev,
-          {
-            id: Date.now(),
-            name: file.name,
-            type: file.type.includes("image") ? "image" : "pdf",
-            parent: folder, // ← adiciona na pasta correta
-            url: URL.createObjectURL(file),
-          },
-        ]);
-        setUploadProgress(0);
-      }
-    }, 200);
+    newQueue.forEach((item) => {
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 10;
+        setUploadQueue((prev) =>
+          prev.map((u) =>
+            u.id === item.id ? { ...u, progress: Math.min(progress, 100) } : u
+          )
+        );
+
+        if (progress >= 100) {
+          clearInterval(interval);
+          setArquivos((prev) => [
+            ...prev,
+            {
+              id: Date.now(),
+              name: item.file.name,
+              type: item.file.type.includes("image") ? "image" : "pdf",
+              parent: folder,
+              url: URL.createObjectURL(item.file),
+            },
+          ]);
+          setUploadQueue((prev) => prev.filter((u) => u.id !== item.id));
+        }
+      }, 200);
+    });
   };
 
   // Drag upload
@@ -100,7 +114,6 @@ export default function ArquivosSuperAdmin() {
     const y = Math.min(e.pageY, window.innerHeight - 120);
     setContextMenu({ x, y });
   };
-
   const closeContextMenu = () => setContextMenu(null);
 
   // Renomear
@@ -122,7 +135,7 @@ export default function ArquivosSuperAdmin() {
     const timer = setTimeout(() => {
       setSelectedItem(item);
       setContextMenu({ x: window.innerWidth / 2 - 80, y: window.innerHeight / 2 - 60 });
-    }, 600); // 600ms toque longo
+    }, 600);
     return timer;
   };
   const handleTouchEnd = (timer) => clearTimeout(timer);
@@ -130,16 +143,11 @@ export default function ArquivosSuperAdmin() {
   // Fechar context menu ao clicar fora (desktop e mobile)
   useEffect(() => {
     if (!contextMenu) return;
-
     const handleClickOutside = (e) => {
-      if (!e.target.closest(".context-menu")) {
-        closeContextMenu();
-      }
+      if (!e.target.closest(".context-menu")) closeContextMenu();
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("touchstart", handleClickOutside);
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("touchstart", handleClickOutside);
@@ -149,8 +157,8 @@ export default function ArquivosSuperAdmin() {
   return (
     <>
       <title>Arquivos | Mukanda Cloud</title>
-
       <SuperAdminLayout title="Arquivos">
+
         {/* Breadcrumb */}
         <div className="flex flex-wrap items-center gap-2 text-sm text-slate-400 mb-4">
           {currentPath.map((p, i) => (
@@ -166,7 +174,7 @@ export default function ArquivosSuperAdmin() {
           ))}
         </div>
 
-        {/* Header com botões empilhados em mobile */}
+        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between gap-2 mb-4">
           <button
             onClick={() => setIsModalOpen(true)}
@@ -178,6 +186,7 @@ export default function ArquivosSuperAdmin() {
 
           <input
             type="file"
+            multiple
             onChange={(e) => handleUpload(e.target.files, currentFolder)}
             className="w-full sm:w-auto text-sm text-slate-400 cursor-pointer"
           />
@@ -192,17 +201,19 @@ export default function ArquivosSuperAdmin() {
           Arraste arquivos aqui
         </div>
 
-        {/* Upload Progress */}
-        {uploadProgress > 0 && (
-          <div className="mb-4">
-            <div className="w-full bg-slate-800 h-2 rounded-full">
-              <div
-                className="bg-cyan-500 h-2 rounded-full transition-all"
-                style={{ width: `${uploadProgress}%` }}
-              ></div>
+        {/* Upload Queue */}
+        {uploadQueue.length > 0 &&
+          uploadQueue.map((item) => (
+            <div key={item.id} className="mb-2">
+              <p className="text-sm text-slate-300 truncate">{item.file.name}</p>
+              <div className="w-full bg-slate-800 h-2 rounded-full">
+                <div
+                  className="bg-cyan-500 h-2 rounded-full transition-all"
+                  style={{ width: `${item.progress}%` }}
+                ></div>
+              </div>
             </div>
-          </div>
-        )}
+          ))}
 
         {/* Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -352,6 +363,7 @@ export default function ArquivosSuperAdmin() {
             </div>
           )}
         </ModalSmall>
+
       </SuperAdminLayout>
     </>
   );
