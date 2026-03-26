@@ -48,8 +48,10 @@ export default function ArquivosSuperAdmin() {
   // Breadcrumb
   const goToPath = (index) => setCurrentPath(currentPath.slice(0, index + 1));
 
-  // Upload com progress
-  const handleUpload = (files) => {
+  // =============================
+  // Upload com progress (atualizado)
+  // =============================
+  const handleUpload = (files, folder = currentFolder) => {
     const file = files[0];
     let progress = 0;
 
@@ -65,7 +67,7 @@ export default function ArquivosSuperAdmin() {
             id: Date.now(),
             name: file.name,
             type: file.type.includes("image") ? "image" : "pdf",
-            parent: currentFolder,
+            parent: folder, // ← adiciona na pasta correta
             url: URL.createObjectURL(file),
           },
         ]);
@@ -77,7 +79,7 @@ export default function ArquivosSuperAdmin() {
   // Drag upload
   const handleDrop = (e) => {
     e.preventDefault();
-    handleUpload(e.dataTransfer.files);
+    handleUpload(e.dataTransfer.files, currentFolder);
   };
 
   // Drag mover arquivos
@@ -176,7 +178,7 @@ export default function ArquivosSuperAdmin() {
 
           <input
             type="file"
-            onChange={(e) => handleUpload(e.target.files)}
+            onChange={(e) => handleUpload(e.target.files, currentFolder)}
             className="w-full sm:w-auto text-sm text-slate-400 cursor-pointer"
           />
         </div>
