@@ -28,6 +28,15 @@ import AtividadesSuperAdmin from "../pages/superadmin/AtividadesSuperAdmin";
 import ConfigSuperAdmin from "../pages/superadmin/ConfigSuperAdmin";
 import NotFoundSuperAdmin from "../pages/superadmin/NotFoundSuperAdmin";
 
+//Dashboard Gerente
+import DashboardGerente from "../pages/gerente/DashboardGerente";
+import ArquivosGerente from "../pages/gerente/ArquivosGerente";
+import EquipaGerente from "../pages/gerente/EquipaGerente";
+import PermissoesGerente from "../pages/gerente/PermissoesGerente";
+import AtividadesGerente from "../pages/gerente/AtividadesGerente";
+import ConfigGerente from "../pages/gerente/ConfigGerente";
+import NotFoundGerente from "../pages/gerente/NotFoundGerente";
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -55,6 +64,17 @@ export default function AppRoutes() {
           <Route path="atividades" element={<AtividadesSuperAdmin />} />
           <Route path="configuracoes" element={<ConfigSuperAdmin />} />
           <Route path="*" element={<NotFoundSuperAdmin />} />
+      </Route>
+
+      {/*Rotas do gerente */}
+      <Route path="/dashboard/gerente/">
+          <Route path="" element={<DashboardGerente />} />
+          <Route path="arquivos" element={<ArquivosGerente />} />
+          <Route path="equipa" element={<EquipaGerente />} />
+          <Route path="permissoes" element={<PermissoesGerente />} />
+          <Route path="atividades" element={<AtividadesGerente />} />
+          <Route path="configuracoes" element={<ConfigGerente />} />
+          <Route path="*" element={<NotFoundGerente />} />
       </Route>
 
     </Routes>
