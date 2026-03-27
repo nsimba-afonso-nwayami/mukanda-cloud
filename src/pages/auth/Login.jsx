@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import toast from "react-hot-toast";
@@ -7,6 +7,7 @@ import { useAuth } from "../../contexts/AuthContext";
 
 export default function Login() {
   const { login } = useAuth();
+  const navigate = useNavigate();
 
   const {
     register,
@@ -16,7 +17,7 @@ export default function Login() {
     resolver: yupResolver(loginSchema),
   });
 
-  const onSubmit = async (data) => {
+   const onSubmit = async (data) => {
     const toastId = toast.loading("Entrando...");
 
     const result = await login({
@@ -26,10 +27,18 @@ export default function Login() {
 
     if (result.success) {
       toast.success("Login realizado com sucesso!", { id: toastId });
+
+      const role = result.user.role;
+
+      if (role === "super_admin") {
+        navigate("/dashboard/superadmin");
+      } else if (role === "gerente") {
+        navigate("/dashboard/gerente");
+      } else {
+        navigate("/dashboard/staff");
+      }
     } else {
-      toast.error(result.error || "Credenciais inválidas", {
-        id: toastId,
-      });
+      toast.error(result.error, { id: toastId });
     }
   };
 
