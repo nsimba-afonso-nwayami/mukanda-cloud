@@ -3,8 +3,9 @@ import {
   loginUsuario,
   logoutUsuario,
   obterAccessToken,
-  obterUsuarioLocal,
 } from "../services/authService";
+
+import { api } from "../services/api";
 
 const AuthContext = createContext();
 
@@ -23,9 +24,14 @@ export function AuthProvider({ children }) {
       return;
     }
 
-    const storedUser = obterUsuarioLocal();
-    setUser(storedUser);
-    setLoading(false);
+    api
+      .get("auth/")
+      .then((res) => setUser(res.data))
+      .catch(() => {
+        logoutUsuario();
+        setUser(null);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   // ============================
