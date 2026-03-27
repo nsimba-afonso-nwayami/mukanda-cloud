@@ -17,11 +17,6 @@ export const obterRefreshToken = () => {
   return localStorage.getItem("refreshToken");
 };
 
-export const obterUsuarioLocal = () => {
-  const user = localStorage.getItem("user");
-  return user ? JSON.parse(user) : null;
-};
-
 export const removerTokens = () => {
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
@@ -32,10 +27,7 @@ export const removerTokens = () => {
 // ============================
 
 export const loginUsuario = async (credentials) => {
-  const response = await api.post("auth/token/", {
-    email: credentials.email,
-    password: credentials.password, // 🔥 CORRETO
-  });
+  const response = await api.post("auth/token/", credentials);
 
   salvarTokens(response.data);
 
@@ -49,21 +41,15 @@ export const loginUsuario = async (credentials) => {
 export const refreshToken = async () => {
   const refresh = obterRefreshToken();
 
-  if (!refresh) return null;
+  if (!refresh) throw new Error("Sem refresh token");
 
-  try {
-    const response = await api.post("auth/token/refresh/", {
-      refresh,
-    });
+  const response = await api.post("auth/token/refresh/", {
+    refresh,
+  });
 
-    localStorage.setItem("accessToken", response.data.access);
+  localStorage.setItem("accessToken", response.data.access);
 
-    return response.data.access;
-  } catch (error) {
-    removerTokens();
-    window.location.href = "/login";
-    return null;
-  }
+  return response.data.access;
 };
 
 // ============================
