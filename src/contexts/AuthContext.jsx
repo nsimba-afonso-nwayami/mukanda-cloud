@@ -1,9 +1,9 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import {
   loginUsuario,
-  obterUsuario,
   logoutUsuario,
   obterAccessToken,
+  obterUsuarioLocal,
 } from "../services/authService";
 
 const AuthContext = createContext();
@@ -13,29 +13,19 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   // ============================
-  // CARREGAR USUÁRIO
+  // INIT
   // ============================
   useEffect(() => {
-    async function carregarUsuario() {
-      const token = obterAccessToken();
+    const token = obterAccessToken();
 
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const data = await obterUsuario();
-        setUser(data);
-      } catch (error) {
-        logoutUsuario();
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
+    if (!token) {
+      setLoading(false);
+      return;
     }
 
-    carregarUsuario();
+    const storedUser = obterUsuarioLocal();
+    setUser(storedUser);
+    setLoading(false);
   }, []);
 
   // ============================
@@ -43,14 +33,26 @@ export function AuthProvider({ children }) {
   // ============================
   async function login(credentials) {
     try {
-      await loginUsuario(credentials);
+      const data = await loginUsuario(credentials);
 
-      const data = await obterUsuario();
-      setUser(data);
+      setUser(data.user);
 
-      return { success: true, user: data };
+      const role = data.user.role;
+
+      if (role === "super_admin") {
+        window.location.href = "/dashboard/superadmin";
+      } else if (role === "gerente") {
+        window.location.href = "/dashboard/gerente";
+      } else {
+        window.location.href = "/dashboard/staff";
+      }
+
+      return { success: true, user: data.user };
     } catch (error) {
-      return { success: false, error };
+      return {
+        success: false,
+        error: error.response?.data || "Erro no login",
+      };
     }
   }
 
@@ -60,18 +62,19 @@ export function AuthProvider({ children }) {
   function logout() {
     logoutUsuario();
     setUser(null);
+    window.location.href = "/login";
   }
 
-  const value = {
-    user,
-    loading,
-    isAuthenticated: !!user,
-    login,
-    logout,
-  };
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        isAuthenticated: !!user,
+        login,
+        logout,
+      }}
+    >
       {!loading && children}
     </AuthContext.Provider>
   );
