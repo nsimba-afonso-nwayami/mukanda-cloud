@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../../../contexts/AuthContext";
 
 export default function HeaderSuperAdmin({ sidebarOpen, setSidebarOpen, title }) {
+  const { user } = useAuth();
+  
   return (
     <header
       className="
@@ -31,26 +34,32 @@ export default function HeaderSuperAdmin({ sidebarOpen, setSidebarOpen, title })
       {/* RIGHT */}
       <div className="flex items-center gap-4">
 
-        {/* Perfil */}
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-slate-500 hidden sm:block uppercase tracking-wider">
-            Mukanda Cloud
-          </span>
-
-          <Link
-            to="/dashboard/superadmin/configuracoes"
-            className="
-              w-9 h-9
-              bg-slate-900 border border-blue-900/40
-              rounded-full flex items-center justify-center
-              hover:border-cyan-500
-              hover:shadow-[0_0_12px_rgba(6,182,212,0.5)]
-              transition-all duration-300
-            "
-          >
-            <i className="fas fa-user text-cyan-500"></i>
-          </Link>
+        {/* Nome do usuário */}
+        <div className="text-right hidden sm:block">
+          <p className="text-xs text-white font-semibold">
+            {user?.name || "Usuário"}
+          </p>
+          <p className="text-[10px] text-slate-500 uppercase tracking-wider">
+            {user?.role}
+          </p>
         </div>
+
+        {/* Avatar */}
+        <Link
+          to="/dashboard/superadmin/configuracoes"
+          className="
+            w-9 h-9
+            bg-slate-900 border border-blue-900/40
+            rounded-full flex items-center justify-center
+            hover:border-cyan-500
+            hover:shadow-[0_0_12px_rgba(6,182,212,0.5)]
+            transition-all duration-300
+          "
+        >
+          <span className="text-cyan-500 text-xs font-bold">
+            {user?.initials || "MC"}
+          </span>
+        </Link>
       </div>
     </header>
   );
