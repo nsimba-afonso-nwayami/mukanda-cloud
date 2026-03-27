@@ -4,7 +4,7 @@ import { Routes, Route } from "react-router-dom";
 import SiteLayout from "../layouts/SiteLayout";
 
 // Private
-//import PrivateRoute from "../routes/PrivateRoute";
+import PrivateRoute from "../routes/PrivateRoute";
 
 //Site
 import Home from "../pages/site/Home";
@@ -62,35 +62,41 @@ export default function AppRoutes() {
       <Route path="/reset-senha" element={<ResetSenha />} />
 
       {/*Rotas do suoer admin */}
-      <Route path="/dashboard/superadmin/">
-        <Route path="" element={<DashboardSuperAdmin />} />
-        <Route path="arquivos" element={<ArquivosSuperAdmin />} />
-        <Route path="departamentos" element={<DepartamentosSuperAdmin />} />
-        <Route path="equipa" element={<EquipaSuperAdmin />} />
-        <Route path="permissoes" element={<PermissoesSuperAdmin />} />
-        <Route path="atividades" element={<AtividadesSuperAdmin />} />
-        <Route path="configuracoes" element={<ConfigSuperAdmin />} />
-        <Route path="*" element={<NotFoundSuperAdmin />} />
+      <Route element={<PrivateRoute allowedRoles={["super_admin"]} />}>
+        <Route path="/dashboard/superadmin/">
+          <Route path="" element={<DashboardSuperAdmin />} />
+          <Route path="arquivos" element={<ArquivosSuperAdmin />} />
+          <Route path="departamentos" element={<DepartamentosSuperAdmin />} />
+          <Route path="equipa" element={<EquipaSuperAdmin />} />
+          <Route path="permissoes" element={<PermissoesSuperAdmin />} />
+          <Route path="atividades" element={<AtividadesSuperAdmin />} />
+          <Route path="configuracoes" element={<ConfigSuperAdmin />} />
+          <Route path="*" element={<NotFoundSuperAdmin />} />
+        </Route>
       </Route>
 
       {/*Rotas do gerente */}
-      <Route path="/dashboard/gerente/">
-        <Route path="" element={<DashboardGerente />} />
-        <Route path="arquivos" element={<ArquivosGerente />} />
-        <Route path="equipa" element={<EquipaGerente />} />
-        <Route path="permissoes" element={<PermissoesGerente />} />
-        <Route path="atividades" element={<AtividadesGerente />} />
-        <Route path="configuracoes" element={<ConfigGerente />} />
-        <Route path="*" element={<NotFoundGerente />} />
+      <Route element={<PrivateRoute allowedRoles={["super_admin"]} />}>
+        <Route path="/dashboard/gerente/">
+          <Route path="" element={<DashboardGerente />} />
+          <Route path="arquivos" element={<ArquivosGerente />} />
+          <Route path="equipa" element={<EquipaGerente />} />
+          <Route path="permissoes" element={<PermissoesGerente />} />
+          <Route path="atividades" element={<AtividadesGerente />} />
+          <Route path="configuracoes" element={<ConfigGerente />} />
+          <Route path="*" element={<NotFoundGerente />} />
+        </Route>
       </Route>
 
       {/*Rotas do staff */}
-      <Route path="/dashboard/staff/">
-        <Route path="" element={<DashboardStaff />} />
-        <Route path="arquivos" element={<ArquivosStaff />} />
-        <Route path="atividades" element={<AtividadesStaff />} />
-        <Route path="configuracoes" element={<ConfigStaff />} />
-        <Route path="*" element={<NotFoundStaff />} />
+      <Route element={<PrivateRoute allowedRoles={["staff"]} />}>
+        <Route path="/dashboard/staff/">
+          <Route path="" element={<DashboardStaff />} />
+          <Route path="arquivos" element={<ArquivosStaff />} />
+          <Route path="atividades" element={<AtividadesStaff />} />
+          <Route path="configuracoes" element={<ConfigStaff />} />
+          <Route path="*" element={<NotFoundStaff />} />
+        </Route>
       </Route>
 
     </Routes>
