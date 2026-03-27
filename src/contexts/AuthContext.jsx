@@ -14,7 +14,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   // ============================
-  // INIT
+  // INIT (carrega user via API)
   // ============================
   useEffect(() => {
     const token = obterAccessToken();
@@ -35,7 +35,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   // ============================
-  // LOGIN
+  // LOGIN (SEM REDIRECT AQUI)
   // ============================
   async function login(credentials) {
     try {
@@ -43,21 +43,11 @@ export function AuthProvider({ children }) {
 
       setUser(data.user);
 
-      const role = data.user.role;
-
-      if (role === "super_admin") {
-        window.location.href = "/dashboard/superadmin";
-      } else if (role === "gerente") {
-        window.location.href = "/dashboard/gerente";
-      } else {
-        window.location.href = "/dashboard/staff";
-      }
-
       return { success: true, user: data.user };
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data || "Erro no login",
+        error: error.response?.data?.detail || "Credenciais inválidas",
       };
     }
   }
