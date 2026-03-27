@@ -7,10 +7,6 @@ import { api } from "./api";
 export const salvarTokens = (data) => {
   localStorage.setItem("accessToken", data.access);
   localStorage.setItem("refreshToken", data.refresh);
-
-  if (data.user) {
-    localStorage.setItem("user", JSON.stringify(data.user));
-  }
 };
 
 export const obterAccessToken = () => {
@@ -29,7 +25,6 @@ export const obterUsuarioLocal = () => {
 export const removerTokens = () => {
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
-  localStorage.removeItem("user");
 };
 
 // ============================
