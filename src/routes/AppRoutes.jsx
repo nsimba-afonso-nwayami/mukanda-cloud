@@ -37,6 +37,13 @@ import AtividadesGerente from "../pages/gerente/AtividadesGerente";
 import ConfigGerente from "../pages/gerente/ConfigGerente";
 import NotFoundGerente from "../pages/gerente/NotFoundGerente";
 
+//Dashboard Staff
+import DashboardStaff from "../pages/staff/DashboardStaff";
+import ArquivosStaff from "../pages/staff/ArquivosStaff";
+import AtividadesStaff from "../pages/staff/AtividadesStaff";
+import ConfigStaff from "../pages/staff/ConfigStaff";
+import NotFoundStaff from "../pages/staff/NotFoundStaff";
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -56,25 +63,34 @@ export default function AppRoutes() {
 
       {/*Rotas do suoer admin */}
       <Route path="/dashboard/superadmin/">
-          <Route path="" element={<DashboardSuperAdmin />} />
-          <Route path="arquivos" element={<ArquivosSuperAdmin />} />
-          <Route path="departamentos" element={<DepartamentosSuperAdmin />} />
-          <Route path="equipa" element={<EquipaSuperAdmin />} />
-          <Route path="permissoes" element={<PermissoesSuperAdmin />} />
-          <Route path="atividades" element={<AtividadesSuperAdmin />} />
-          <Route path="configuracoes" element={<ConfigSuperAdmin />} />
-          <Route path="*" element={<NotFoundSuperAdmin />} />
+        <Route path="" element={<DashboardSuperAdmin />} />
+        <Route path="arquivos" element={<ArquivosSuperAdmin />} />
+        <Route path="departamentos" element={<DepartamentosSuperAdmin />} />
+        <Route path="equipa" element={<EquipaSuperAdmin />} />
+        <Route path="permissoes" element={<PermissoesSuperAdmin />} />
+        <Route path="atividades" element={<AtividadesSuperAdmin />} />
+        <Route path="configuracoes" element={<ConfigSuperAdmin />} />
+        <Route path="*" element={<NotFoundSuperAdmin />} />
       </Route>
 
       {/*Rotas do gerente */}
       <Route path="/dashboard/gerente/">
-          <Route path="" element={<DashboardGerente />} />
-          <Route path="arquivos" element={<ArquivosGerente />} />
-          <Route path="equipa" element={<EquipaGerente />} />
-          <Route path="permissoes" element={<PermissoesGerente />} />
-          <Route path="atividades" element={<AtividadesGerente />} />
-          <Route path="configuracoes" element={<ConfigGerente />} />
-          <Route path="*" element={<NotFoundGerente />} />
+        <Route path="" element={<DashboardGerente />} />
+        <Route path="arquivos" element={<ArquivosGerente />} />
+        <Route path="equipa" element={<EquipaGerente />} />
+        <Route path="permissoes" element={<PermissoesGerente />} />
+        <Route path="atividades" element={<AtividadesGerente />} />
+        <Route path="configuracoes" element={<ConfigGerente />} />
+        <Route path="*" element={<NotFoundGerente />} />
+      </Route>
+
+      {/*Rotas do staff */}
+      <Route path="/dashboard/staff/">
+        <Route path="" element={<DashboardStaff />} />
+        <Route path="arquivos" element={<ArquivosStaff />} />
+        <Route path="atividades" element={<AtividadesStaff />} />
+        <Route path="configuracoes" element={<ConfigStaff />} />
+        <Route path="*" element={<NotFoundStaff />} />
       </Route>
 
     </Routes>
