@@ -5,21 +5,21 @@ import { api } from "./api";
 // ============================
 
 export const salvarTokens = (data) => {
-  localStorage.setItem("accessToken", data.access);
-  localStorage.setItem("refreshToken", data.refresh);
+  localStorage.setItem("access", data.access);
+  localStorage.setItem("refresh", data.refresh);
 };
 
 export const obterAccessToken = () => {
-  return localStorage.getItem("accessToken");
+  return localStorage.getItem("access");
 };
 
 export const obterRefreshToken = () => {
-  return localStorage.getItem("refreshToken");
+  return localStorage.getItem("refresh");
 };
 
 export const removerTokens = () => {
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("access");
+  localStorage.removeItem("refresh");
 };
 
 // ============================
@@ -47,7 +47,7 @@ export const refreshToken = async () => {
     refresh,
   });
 
-  localStorage.setItem("accessToken", response.data.access);
+  localStorage.setItem("access", response.data.access);
 
   return response.data.access;
 };
