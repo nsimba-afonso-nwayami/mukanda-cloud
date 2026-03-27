@@ -7,6 +7,10 @@ import { api } from "./api";
 export const salvarTokens = (data) => {
   localStorage.setItem("accessToken", data.access);
   localStorage.setItem("refreshToken", data.refresh);
+
+  if (data.user) {
+    localStorage.setItem("user", JSON.stringify(data.user));
+  }
 };
 
 export const obterAccessToken = () => {
@@ -17,9 +21,15 @@ export const obterRefreshToken = () => {
   return localStorage.getItem("refreshToken");
 };
 
+export const obterUsuarioLocal = () => {
+  const user = localStorage.getItem("user");
+  return user ? JSON.parse(user) : null;
+};
+
 export const removerTokens = () => {
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
+  localStorage.removeItem("user");
 };
 
 // ============================
@@ -27,11 +37,38 @@ export const removerTokens = () => {
 // ============================
 
 export const loginUsuario = async (credentials) => {
-  const response = await api.post("auth/token/", credentials);
+  const response = await api.post("auth/token/", {
+    email: credentials.email,
+    password: credentials.password, // 🔥 CORRETO
+  });
 
   salvarTokens(response.data);
 
   return response.data;
+};
+
+// ============================
+// REFRESH TOKEN
+// ============================
+
+export const refreshToken = async () => {
+  const refresh = obterRefreshToken();
+
+  if (!refresh) return null;
+
+  try {
+    const response = await api.post("auth/token/refresh/", {
+      refresh,
+    });
+
+    localStorage.setItem("accessToken", response.data.access);
+
+    return response.data.access;
+  } catch (error) {
+    removerTokens();
+    window.location.href = "/login";
+    return null;
+  }
 };
 
 // ============================
@@ -43,30 +80,11 @@ export const logoutUsuario = async () => {
     const refresh = obterRefreshToken();
 
     if (refresh) {
-      await api.post("auth/token/logout/", {
-        refresh,
-      });
+      await api.post("auth/token/logout/", { refresh });
     }
   } catch (error) {
-    console.log("Erro ao fazer logout:", error);
+    console.log("Erro logout:", error);
   } finally {
     removerTokens();
   }
-};
-
-// ============================
-// USUÁRIO LOGADO
-// (ajusta conforme tua API)
-// ============================
-
-export const obterUsuario = async () => {
-  const token = obterAccessToken();
-
-  const response = await api.get("auth/", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  return response.data;
 };
