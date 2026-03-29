@@ -1,9 +1,4 @@
 import axios from "axios";
-import {
-  obterAccessToken,
-  refreshToken,
-  logoutUsuario,
-} from "./authService";
 
 const API_URL = "https://gestao.nwayami.com/api/";
 
@@ -14,45 +9,46 @@ export const api = axios.create({
   },
 });
 
-// ============================
-// REQUEST INTERCEPTOR
-// ============================
-
+// Anexa o token em cada requisição
 api.interceptors.request.use((config) => {
-  const token = obterAccessToken();
-
+  const token = localStorage.getItem("access");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-
   return config;
 });
 
-// ============================
-// RESPONSE INTERCEPTOR (REFRESH)
-// ============================
-
+// Interceptor para Refresh Token automático
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // 🔁 Tenta refresh automático
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (
+      error.response?.status === 401 && 
+      !originalRequest._retry && 
+      !originalRequest.url.includes("auth/token")
+    ) {
       originalRequest._retry = true;
 
       try {
-        const newAccess = await refreshToken();
+        const refreshToken = localStorage.getItem("refresh");
+        if (!refreshToken) throw new Error();
 
+        const response = await axios.post(`${API_URL}auth/token/refresh/`, {
+          refresh: refreshToken,
+        });
+
+        const newAccess = response.data.access;
+        localStorage.setItem("access", newAccess);
+        
         originalRequest.headers.Authorization = `Bearer ${newAccess}`;
-
         return api(originalRequest);
       } catch (err) {
-        logoutUsuario();
+        localStorage.clear();
         window.location.href = "/login";
       }
     }
-
     return Promise.reject(error);
   }
 );

@@ -1,11 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import {
-  loginUsuario,
-  logoutUsuario,
-  obterAccessToken,
-} from "../services/authService";
-
 import { api } from "../services/api";
+import { loginUsuario, logoutUsuario, removerTokens } from "../services/authService";
 
 const AuthContext = createContext();
 
@@ -13,36 +8,29 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // ============================
-  // INIT (carrega user via API)
-  // ============================
   useEffect(() => {
-    const token = obterAccessToken();
+    const initAuth = () => {
+      const token = localStorage.getItem("access");
+      const savedUser = localStorage.getItem("user");
 
-    if (!token) {
+      if (token && savedUser) {
+        try {
+          setUser(JSON.parse(savedUser));
+        } catch (e) {
+          removerTokens();
+        }
+      }
       setLoading(false);
-      return;
-    }
-
-    api
-      .get("auth/")
-      .then((res) => setUser(res.data))
-      .catch(() => {
-        logoutUsuario();
-        setUser(null);
-      })
-      .finally(() => setLoading(false));
+    };
+    initAuth();
   }, []);
 
-  // ============================
-  // LOGIN (SEM REDIRECT AQUI)
-  // ============================
   async function login(credentials) {
     try {
       const data = await loginUsuario(credentials);
-
+      // O data.user vem da sua API conforme vimos no log
       setUser(data.user);
-
+      localStorage.setItem("user", JSON.stringify(data.user));
       return { success: true, user: data.user };
     } catch (error) {
       return {
@@ -52,30 +40,18 @@ export function AuthProvider({ children }) {
     }
   }
 
-  // ============================
-  // LOGOUT
-  // ============================
   function logout() {
     logoutUsuario();
     setUser(null);
+    localStorage.removeItem("user");
     window.location.href = "/login";
   }
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        isAuthenticated: !!user,
-        login,
-        logout,
-      }}
-    >
+    <AuthContext.Provider value={{ user, loading, isAuthenticated: !!user, login, logout }}>
       {!loading && children}
     </AuthContext.Provider>
   );
 }
 
-export function useAuth() {
-  return useContext(AuthContext);
-}
+export const useAuth = () => useContext(AuthContext);
