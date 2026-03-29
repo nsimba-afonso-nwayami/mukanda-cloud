@@ -76,7 +76,7 @@ export default function AppRoutes() {
       </Route>
 
       {/*Rotas do gerente */}
-      <Route element={<PrivateRoute allowedRoles={["super_admin"]} />}>
+      <Route element={<PrivateRoute allowedRoles={["gerente"]} />}>
         <Route path="/dashboard/gerente/">
           <Route path="" element={<DashboardGerente />} />
           <Route path="arquivos" element={<ArquivosGerente />} />
