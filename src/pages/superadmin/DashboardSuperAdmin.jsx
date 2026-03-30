@@ -1,29 +1,93 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SuperAdminLayout from "./components/SuperAdminLayout";
 import ModalSmall from "./components/ModalSmall";
 import { Link } from "react-router-dom";
 
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import toast from "react-hot-toast";
+
+import { folderSchema } from "../../validations/folderSchema";
+import { createFolder, getNodes } from "../../services/fileService";
+
 export default function DashboardSuperAdmin() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [novaPasta, setNovaPasta] = useState("");
+  const [nodes, setNodes] = useState([]);
+  const [loadingNodes, setLoadingNodes] = useState(true);
 
-  // Permissões
-  const [permissoes, setPermissoes] = useState({
-    ler: true,
-    escrever: false,
-    executar: false,
-    apagar: false,
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: yupResolver(folderSchema),
+    defaultValues: {
+      nome: "",
+      permissoes: {
+        ler: true,
+        escrever: false,
+        executar: false,
+        apagar: false,
+      },
+    },
   });
 
+  const permissoes = watch("permissoes");
+
   const togglePermissao = (key) => {
-    setPermissoes((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
+    setValue(`permissoes.${key}`, !permissoes[key]);
+  };
+
+  // 🔥 FETCH CORRIGIDO
+  const fetchNodes = async () => {
+    try {
+      setLoadingNodes(true);
+
+      const data = await getNodes();
+
+      // já vem normalizado do service, mas mantemos segurança
+      const safeData = Array.isArray(data) ? data : [];
+
+      const filesOnly = safeData.filter(
+        (item) => item?.type === "file"
+      );
+
+      setNodes(filesOnly);
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao carregar arquivos");
+      setNodes([]);
+    } finally {
+      setLoadingNodes(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNodes();
+  }, []);
+
+  // 🔥 CREATE FOLDER
+  const onSubmit = async (data) => {
+    try {
+      await createFolder(data);
+
+      toast.success("Pasta criada com sucesso 🚀");
+
+      reset();
+      setIsModalOpen(false);
+
+      fetchNodes();
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao criar pasta");
+    }
   };
 
   const stats = [
-    { id: 1, title: "Total de Arquivos", value: 1240, icon: "fas fa-file" },
+    { id: 1, title: "Total de Arquivos", value: nodes.length, icon: "fas fa-file" },
     { id: 2, title: "Armazenamento", value: "32GB / 100GB", icon: "fas fa-database" },
     { id: 3, title: "Equipa", value: 18, icon: "fas fa-users" },
     { id: 4, title: "Departamentos", value: 5, icon: "fas fa-building" },
@@ -35,34 +99,13 @@ export default function DashboardSuperAdmin() {
     { user: "Carlos Mendes", action: "criou pasta", file: "Financeiro", time: "10 min atrás" },
   ];
 
-  const arquivos = [
-    { name: "Relatório Financeiro.pdf", size: "2MB" },
-    { name: "Plano Marketing.docx", size: "1.2MB" },
-    { name: "Apresentação.pptx", size: "3.5MB" },
-  ];
-
-  const handleCriarPasta = () => {
-    console.log("Criando pasta:", novaPasta);
-    console.log("Permissões:", permissoes);
-
-    setNovaPasta("");
-    setPermissoes({
-      ler: true,
-      escrever: false,
-      executar: false,
-      apagar: false,
-    });
-
-    setIsModalOpen(false);
-  };
-
   return (
     <>
       <title>Dashboard | Mukanda Cloud</title>
 
       <SuperAdminLayout title="Dashboard SuperAdmin">
 
-        {/* BOTÃO NOVA PASTA */}
+        {/* BOTÃO */}
         <div className="flex justify-end mb-4">
           <button
             onClick={() => setIsModalOpen(true)}
@@ -88,12 +131,13 @@ export default function DashboardSuperAdmin() {
                   {stat.value}
                 </h3>
               </div>
+
               <i className={`${stat.icon} text-2xl text-cyan-500`}></i>
             </div>
           ))}
         </div>
 
-        {/* GRID PRINCIPAL */}
+        {/* GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
 
           {/* ATIVIDADES */}
@@ -123,15 +167,30 @@ export default function DashboardSuperAdmin() {
             </h2>
 
             <ul className="divide-y divide-blue-900">
-              {arquivos.map((file, index) => (
-                <li
-                  key={index}
-                  className="py-3 flex justify-between items-center"
-                >
-                  <span className="text-slate-300">{file.name}</span>
-                  <span className="text-xs text-slate-500">{file.size}</span>
+              {loadingNodes ? (
+                <li className="py-3 text-slate-400 text-sm">
+                  Carregando...
                 </li>
-              ))}
+              ) : nodes.length === 0 ? (
+                <li className="py-3 text-slate-400 text-sm">
+                  Nenhum arquivo encontrado
+                </li>
+              ) : (
+                nodes.slice(0, 5).map((file) => (
+                  <li
+                    key={file.id}
+                    className="py-3 flex justify-between items-center"
+                  >
+                    <span className="text-slate-300">
+                      {file.name || "Sem nome"}
+                    </span>
+
+                    <span className="text-xs text-slate-500">
+                      {file.size || "--"}
+                    </span>
+                  </li>
+                ))
+              )}
             </ul>
 
             <Link
@@ -143,91 +202,60 @@ export default function DashboardSuperAdmin() {
           </div>
         </div>
 
-        {/* MODAL NOVA PASTA */}
+        {/* MODAL */}
         <ModalSmall
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           title="Criar Nova Pasta"
           icon="fas fa-folder-plus"
         >
-          <div className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
 
-            {/* Nome */}
             <input
               type="text"
               placeholder="Nome da pasta"
-              value={novaPasta}
-              onChange={(e) => setNovaPasta(e.target.value)}
+              {...register("nome")}
               className="p-3 rounded-lg bg-slate-800 text-white border border-blue-900 focus:border-cyan-500 focus:outline-none"
             />
 
-            {/* Permissões */}
+            {errors.nome && (
+              <p className="text-red-500 text-xs">
+                {errors.nome.message}
+              </p>
+            )}
+
             <div className="bg-slate-800 border border-blue-900 rounded-lg p-4">
               <p className="text-sm text-slate-400 mb-3 uppercase tracking-wider">
                 Permissões
               </p>
 
-              {/* Permissões */}
-              <div className="bg-slate-800 border border-blue-900 rounded-lg p-4">
-                <p className="text-sm text-slate-400 mb-3 uppercase tracking-wider">
-                  Permissões
-                </p>
-
-                <div className="grid grid-cols-2 gap-3 text-sm">
-
-                  <label className="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-cyan-400 transition">
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                {["ler", "escrever", "executar", "apagar"].map((perm) => (
+                  <label
+                    key={perm}
+                    className="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-cyan-400 transition"
+                  >
                     <input
                       type="checkbox"
-                      checked={permissoes.ler}
-                      onChange={() => togglePermissao("ler")}
+                      checked={permissoes[perm]}
+                      onChange={() => togglePermissao(perm)}
                       className="accent-cyan-500 cursor-pointer"
                     />
-                    Ler
+                    {perm.charAt(0).toUpperCase() + perm.slice(1)}
                   </label>
-
-                  <label className="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-cyan-400 transition">
-                    <input
-                      type="checkbox"
-                      checked={permissoes.escrever}
-                      onChange={() => togglePermissao("escrever")}
-                      className="accent-cyan-500 cursor-pointer"
-                    />
-                    Escrever
-                  </label>
-
-                  <label className="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-cyan-400 transition">
-                    <input
-                      type="checkbox"
-                      checked={permissoes.executar}
-                      onChange={() => togglePermissao("executar")}
-                      className="accent-cyan-500 cursor-pointer"
-                    />
-                    Executar
-                  </label>
-
-                  <label className="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-cyan-400 transition">
-                    <input
-                      type="checkbox"
-                      checked={permissoes.apagar}
-                      onChange={() => togglePermissao("apagar")}
-                      className="accent-cyan-500 cursor-pointer"
-                    />
-                    Apagar
-                  </label>
-
-                </div>
+                ))}
               </div>
             </div>
 
-            {/* Botão */}
             <button
-              onClick={handleCriarPasta}
-              className="px-4 py-2 cursor-pointer bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold rounded-lg transition"
+              type="submit"
+              disabled={isSubmitting}
+              className="px-4 py-2 cursor-pointer bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-slate-900 font-semibold rounded-lg transition"
             >
-              Criar Pasta
+              {isSubmitting ? "Criando..." : "Criar Pasta"}
             </button>
 
-          </div>
+          </form>
         </ModalSmall>
 
       </SuperAdminLayout>
