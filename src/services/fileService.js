@@ -16,7 +16,7 @@ const normalizeList = (data) => {
 
 const getData = (response) => response?.data;
 
-// 🔥 pega user do localStorage
+// pega user do localStorage
 const getUser = () => {
   try {
     return JSON.parse(localStorage.getItem("user"));
@@ -31,7 +31,7 @@ const getUser = () => {
  * =========================
  */
 
-// 🔥 converte objeto → bitmask
+// converte objeto → bitmask
 export const buildPermissionMask = (perms = {}) => {
   let mask = 0;
 
@@ -43,7 +43,7 @@ export const buildPermissionMask = (perms = {}) => {
   return mask;
 };
 
-// 🔥 converte bitmask → objeto
+// converte bitmask → objeto
 export const parsePermissionMask = (mask = 0) => ({
   ler: Boolean(mask & 1),
   escrever: Boolean(mask & 2),
