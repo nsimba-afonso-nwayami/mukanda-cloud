@@ -32,7 +32,7 @@ export default function Login() {
 
       if (role === "super_admin") {
         navigate("/dashboard/superadmin");
-      } else if (role === "gerente") {
+      } else if (role === "dept_manager") {
         navigate("/dashboard/gerente");
       } else {
         navigate("/dashboard/staff");
