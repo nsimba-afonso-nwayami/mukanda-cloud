@@ -14,11 +14,4 @@ export const folderSchema = yup.object().shape({
       "Contém caracteres inválidos (<>:\"/\\|?*)",
       (value) => !INVALID_CHARS.test(value || "")
     ),
-
-  permissoes: yup.object().shape({
-    ler: yup.boolean(),
-    escrever: yup.boolean(),
-    executar: yup.boolean(),
-    apagar: yup.boolean(),
-  }),
 });
