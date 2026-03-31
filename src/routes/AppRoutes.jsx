@@ -89,7 +89,7 @@ export default function AppRoutes() {
       </Route>
 
       {/*Rotas do staff */}
-      <Route element={<PrivateRoute allowedRoles={["staff"]} />}>
+      <Route element={<PrivateRoute allowedRoles={["team_member"]} />}>
         <Route path="/dashboard/staff/">
           <Route path="" element={<DashboardStaff />} />
           <Route path="arquivos" element={<ArquivosStaff />} />
