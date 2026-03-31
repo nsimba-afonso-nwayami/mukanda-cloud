@@ -34,9 +34,7 @@ export default function DashboardSuperAdmin() {
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(folderSchema),
-    defaultValues: {
-      nome: "",
-    },
+    defaultValues: { nome: "" },
   });
 
   /**
@@ -165,10 +163,10 @@ export default function DashboardSuperAdmin() {
           ))}
         </div>
 
-        {/* GRID */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        {/* GRID (🔥 FIX PRINCIPAL AQUI) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6 items-start">
 
-          {/* ATIVIDADES */}
+          {/* ===================== ATIVIDADES ===================== */}
           <div className="bg-slate-900 border border-blue-900 rounded-xl p-6">
 
             <h2 className="text-sm font-bold text-cyan-500 mb-4 uppercase tracking-wider">
@@ -281,7 +279,7 @@ export default function DashboardSuperAdmin() {
             )}
           </div>
 
-          {/* ARQUIVOS */}
+          {/* ===================== ARQUIVOS ===================== */}
           <div className="bg-slate-900 border border-blue-900 rounded-xl p-6">
 
             <h2 className="text-sm font-bold text-cyan-500 mb-4 uppercase tracking-wider">
