@@ -9,53 +9,52 @@ import toast from "react-hot-toast";
 
 import { folderSchema } from "../../validations/folderSchema";
 import { createFolder, getNodes } from "../../services/fileService";
+import { getLogs, groupLogs } from "../../services/logService";
 
 export default function DashboardSuperAdmin() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [nodes, setNodes] = useState([]);
   const [loadingNodes, setLoadingNodes] = useState(true);
+
+  const [logGroups, setLogGroups] = useState({
+    hoje: [],
+    ontem: [],
+    antigos: [],
+  });
+
+  const [loadingLogs, setLoadingLogs] = useState(true);
+
+  const LOG_LIMIT = 5;
 
   const {
     register,
     handleSubmit,
     reset,
-    watch,
-    setValue,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(folderSchema),
     defaultValues: {
       nome: "",
-      permissoes: {
-        ler: true,
-        escrever: false,
-        executar: false,
-        apagar: false,
-      },
     },
   });
 
-  const permissoes = watch("permissoes");
-
-  const togglePermissao = (key) => {
-    setValue(`permissoes.${key}`, !permissoes[key]);
-  };
-
-  // 🔥 FETCH CORRIGIDO
+  /**
+   * =========================
+   * NODES
+   * =========================
+   */
   const fetchNodes = async () => {
     try {
       setLoadingNodes(true);
 
       const data = await getNodes();
 
-      // já vem normalizado do service, mas mantemos segurança
-      const safeData = Array.isArray(data) ? data : [];
+      const sorted = Array.isArray(data)
+        ? [...data].sort((a, b) => b.id - a.id)
+        : [];
 
-      const filesOnly = safeData.filter(
-        (item) => item?.type === "file"
-      );
-
-      setNodes(filesOnly);
+      setNodes(sorted);
     } catch (error) {
       console.error(error);
       toast.error("Erro ao carregar arquivos");
@@ -65,11 +64,44 @@ export default function DashboardSuperAdmin() {
     }
   };
 
+  /**
+   * =========================
+   * LOGS
+   * =========================
+   */
+  const fetchLogs = async () => {
+    try {
+      setLoadingLogs(true);
+
+      const data = await getLogs();
+
+      const sorted = Array.isArray(data)
+        ? [...data].sort(
+            (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+          )
+        : [];
+
+      const grouped = groupLogs(sorted);
+
+      setLogGroups(grouped);
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao carregar atividades");
+    } finally {
+      setLoadingLogs(false);
+    }
+  };
+
   useEffect(() => {
     fetchNodes();
+    fetchLogs();
   }, []);
 
-  // 🔥 CREATE FOLDER
+  /**
+   * =========================
+   * CREATE FOLDER
+   * =========================
+   */
   const onSubmit = async (data) => {
     try {
       await createFolder(data);
@@ -80,8 +112,10 @@ export default function DashboardSuperAdmin() {
       setIsModalOpen(false);
 
       fetchNodes();
+      fetchLogs();
     } catch (error) {
       console.error(error);
+      console.log(error.response?.data);
       toast.error("Erro ao criar pasta");
     }
   };
@@ -91,12 +125,6 @@ export default function DashboardSuperAdmin() {
     { id: 2, title: "Armazenamento", value: "32GB / 100GB", icon: "fas fa-database" },
     { id: 3, title: "Equipa", value: 18, icon: "fas fa-users" },
     { id: 4, title: "Departamentos", value: 5, icon: "fas fa-building" },
-  ];
-
-  const atividades = [
-    { user: "João Silva", action: "enviou", file: "relatorio.pdf", time: "Agora" },
-    { user: "Maria Santos", action: "apagou", file: "contrato.docx", time: "5 min atrás" },
-    { user: "Carlos Mendes", action: "criou pasta", file: "Financeiro", time: "10 min atrás" },
   ];
 
   return (
@@ -142,51 +170,150 @@ export default function DashboardSuperAdmin() {
 
           {/* ATIVIDADES */}
           <div className="bg-slate-900 border border-blue-900 rounded-xl p-6">
+
             <h2 className="text-sm font-bold text-cyan-500 mb-4 uppercase tracking-wider">
               Atividades Recentes
             </h2>
 
-            <ul className="divide-y divide-blue-900">
-              {atividades.map((a, index) => (
-                <li key={index} className="py-3">
-                  <p className="text-sm text-slate-300">
-                    <span className="text-white font-semibold">{a.user}</span>{" "}
-                    {a.action}{" "}
-                    <span className="text-cyan-300">{a.file}</span>
-                  </p>
-                  <span className="text-xs text-slate-500">{a.time}</span>
-                </li>
-              ))}
-            </ul>
+            {loadingLogs ? (
+              <p className="text-slate-400 text-sm">Carregando...</p>
+            ) : (
+              <>
+                {logGroups.hoje.length > 0 && (
+                  <>
+                    <p className="text-xs text-cyan-400 mb-2">Hoje</p>
+
+                    <ul className="divide-y divide-blue-900 mb-4">
+                      {logGroups.hoje.slice(0, LOG_LIMIT).map((a) => (
+                        <li key={a.id} className="py-2">
+                          <p className="text-sm text-slate-300">
+                            <span className="text-white font-semibold">
+                              {a.user}
+                            </span>{" "}
+                            {a.action}{" "}
+                            <span className="text-cyan-300">{a.target}</span>
+                          </p>
+
+                          <span className="text-xs text-slate-500">
+                            {a.timestamp?.fromNow?.() || ""}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    {logGroups.hoje.length > LOG_LIMIT && (
+                      <Link
+                        to="/dashboard/superadmin/atividades"
+                        className="text-xs text-cyan-500 hover:text-cyan-300 transition inline-block mb-4"
+                      >
+                        Ver todos →
+                      </Link>
+                    )}
+                  </>
+                )}
+
+                {logGroups.ontem.length > 0 && (
+                  <>
+                    <p className="text-xs text-cyan-400 mb-2">Ontem</p>
+
+                    <ul className="divide-y divide-blue-900 mb-4">
+                      {logGroups.ontem.slice(0, LOG_LIMIT).map((a) => (
+                        <li key={a.id} className="py-2">
+                          <p className="text-sm text-slate-300">
+                            <span className="text-white font-semibold">
+                              {a.user}
+                            </span>{" "}
+                            {a.action}{" "}
+                            <span className="text-cyan-300">{a.target}</span>
+                          </p>
+
+                          <span className="text-xs text-slate-500">
+                            {a.timestamp?.fromNow?.() || ""}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    {logGroups.ontem.length > LOG_LIMIT && (
+                      <Link
+                        to="/dashboard/superadmin/logs"
+                        className="text-xs text-cyan-500 hover:text-cyan-300 transition inline-block mb-4"
+                      >
+                        Ver todos →
+                      </Link>
+                    )}
+                  </>
+                )}
+
+                {logGroups.antigos.length > 0 && (
+                  <>
+                    <p className="text-xs text-cyan-400 mb-2">Antigos</p>
+
+                    <ul className="divide-y divide-blue-900">
+                      {logGroups.antigos.slice(0, LOG_LIMIT).map((a) => (
+                        <li key={a.id} className="py-2">
+                          <p className="text-sm text-slate-300">
+                            <span className="text-white font-semibold">
+                              {a.user}
+                            </span>{" "}
+                            {a.action}{" "}
+                            <span className="text-cyan-300">{a.target}</span>
+                          </p>
+
+                          <span className="text-xs text-slate-500">
+                            {a.timestamp?.format?.("DD/MM HH:mm") || ""}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    {logGroups.antigos.length > LOG_LIMIT && (
+                      <Link
+                        to="/dashboard/superadmin/atividades"
+                        className="text-xs text-cyan-500 hover:text-cyan-300 transition inline-block mt-3"
+                      >
+                        Ver todos →
+                      </Link>
+                    )}
+                  </>
+                )}
+              </>
+            )}
           </div>
 
           {/* ARQUIVOS */}
           <div className="bg-slate-900 border border-blue-900 rounded-xl p-6">
+
             <h2 className="text-sm font-bold text-cyan-500 mb-4 uppercase tracking-wider">
               Arquivos Recentes
             </h2>
 
             <ul className="divide-y divide-blue-900">
               {loadingNodes ? (
-                <li className="py-3 text-slate-400 text-sm">
-                  Carregando...
-                </li>
+                <li className="py-3 text-slate-400 text-sm">Carregando...</li>
               ) : nodes.length === 0 ? (
                 <li className="py-3 text-slate-400 text-sm">
                   Nenhum arquivo encontrado
                 </li>
               ) : (
-                nodes.slice(0, 5).map((file) => (
+                nodes.slice(0, LOG_LIMIT).map((item) => (
                   <li
-                    key={file.id}
+                    key={item.id}
                     className="py-3 flex justify-between items-center"
                   >
-                    <span className="text-slate-300">
-                      {file.name || "Sem nome"}
+                    <span className="text-slate-300 flex items-center gap-2">
+                      <i
+                        className={
+                          item.type === "folder"
+                            ? "fas fa-folder text-yellow-400"
+                            : "fas fa-file text-cyan-500"
+                        }
+                      />
+                      {item.name}
                     </span>
 
                     <span className="text-xs text-slate-500">
-                      {file.size || "--"}
+                      {item.type === "file" ? item.size || "--" : "Pasta"}
                     </span>
                   </li>
                 ))
@@ -200,6 +327,7 @@ export default function DashboardSuperAdmin() {
               Ver todos →
             </Link>
           </div>
+
         </div>
 
         {/* MODAL */}
@@ -223,29 +351,6 @@ export default function DashboardSuperAdmin() {
                 {errors.nome.message}
               </p>
             )}
-
-            <div className="bg-slate-800 border border-blue-900 rounded-lg p-4">
-              <p className="text-sm text-slate-400 mb-3 uppercase tracking-wider">
-                Permissões
-              </p>
-
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                {["ler", "escrever", "executar", "apagar"].map((perm) => (
-                  <label
-                    key={perm}
-                    className="flex items-center gap-2 cursor-pointer text-slate-300 hover:text-cyan-400 transition"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={permissoes[perm]}
-                      onChange={() => togglePermissao(perm)}
-                      className="accent-cyan-500 cursor-pointer"
-                    />
-                    {perm.charAt(0).toUpperCase() + perm.slice(1)}
-                  </label>
-                ))}
-              </div>
-            </div>
 
             <button
               type="submit"
