@@ -1,210 +1,288 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import SuperAdminLayout from "./components/SuperAdminLayout";
 import ModalSmall from "./components/ModalSmall";
 
-export default function DepartamentosSuperAdmin() {
-  const [departamentos, setDepartamentos] = useState([
-    { id: 1, name: "Financeiro", parent: "Home", pessoas: 5 },
-    { id: 2, name: "Recursos Humanos", parent: "Home", pessoas: 3 },
-    { id: 3, name: "TI", parent: "Home", pessoas: 8 },
-    { id: 4, name: "TI Suporte", parent: "TI", pessoas: 4 },
-  ]);
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import toast from "react-hot-toast";
 
-  const [currentPath, setCurrentPath] = useState(["Home"]);
+import { departmentSchema } from "../../validations/departmentSchema";
+import {
+  getDepartments,
+  createDepartment,
+  updateDepartment,
+  deleteDepartment,
+} from "../../services/departmentService";
+
+export default function DepartamentosSuperAdmin() {
+  const [departamentos, setDepartamentos] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [renameModal, setRenameModal] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
-  const [novaDepartamento, setNovaDepartamento] = useState("");
+
   const [selectedDepartamento, setSelectedDepartamento] = useState(null);
   const [previewDepartamento, setPreviewDepartamento] = useState(null);
-  const [renameValue, setRenameValue] = useState("");
+
   const [contextMenu, setContextMenu] = useState(null);
 
-  const dragItem = useRef();
+  const [pesquisa, setPesquisa] = useState("");
+  const [verMais, setVerMais] = useState(false);
 
-  const currentFolder = currentPath[currentPath.length - 1];
-  const departamentosFiltrados = departamentos.filter(
-    (d) => d.parent === currentFolder
-  );
+  const LIMIT = 10;
 
-  // =============================
-  // Funções principais
-  // =============================
-  const handleCriarDepartamento = () => {
-    if (!novaDepartamento.trim()) return;
-    setDepartamentos([
-      ...departamentos,
-      { id: Date.now(), name: novaDepartamento, parent: currentFolder, pessoas: 0 },
-    ]);
-    setNovaDepartamento("");
-    setIsModalOpen(false);
+  /**
+   * =========================
+   * FORM (CRIAR)
+   * =========================
+   */
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: yupResolver(departmentSchema),
+    defaultValues: { nome: "" },
+  });
+
+  /**
+   * =========================
+   * FORM (RENOMEAR)
+   * =========================
+   */
+  const {
+    register: registerRename,
+    handleSubmit: handleSubmitRename,
+    setValue: setRenameValue,
+    formState: { errors: renameErrors, isSubmitting: isRenaming },
+  } = useForm({
+    resolver: yupResolver(departmentSchema),
+    defaultValues: { nome: "" },
+  });
+
+  /**
+   * =========================
+   * FETCH
+   * =========================
+   */
+  const fetchDepartments = async () => {
+    try {
+      setLoading(true);
+      const data = await getDepartments();
+      setDepartamentos(data);
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao carregar departamentos");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleOpen = (item) => {
-    setCurrentPath([...currentPath, item.name]);
-    closeContextMenu();
+  useEffect(() => {
+    fetchDepartments();
+  }, []);
+
+  /**
+   * =========================
+   * CREATE
+   * =========================
+   */
+  const onSubmit = async (data) => {
+    try {
+      console.log("PAYLOAD CREATE DEPARTMENT:", data);
+
+      await createDepartment(data);
+
+      toast.success("Departamento criado");
+      reset();
+      setIsModalOpen(false);
+      fetchDepartments();
+    } catch (err) {
+      console.log("ERRO BACKEND:", err.response?.data);
+      toast.error("Erro ao criar departamento");
+    }
   };
 
-  const handlePreview = (item) => {
-    setPreviewDepartamento(item);
-    closeContextMenu();
+  /**
+   * =========================
+   * RENAME
+   * =========================
+   */
+  const onRename = async (data) => {
+    try {
+      await updateDepartment(selectedDepartamento.id, data.nome);
+      toast.success("Departamento atualizado");
+
+      setRenameModal(false);
+      fetchDepartments();
+    } catch {
+      toast.error("Erro ao renomear");
+    }
   };
 
-  const goToPath = (index) => setCurrentPath(currentPath.slice(0, index + 1));
+  /**
+   * =========================
+   * DELETE
+   * =========================
+   */
+  const handleDelete = async () => {
+    try {
+      await deleteDepartment(selectedDepartamento.id);
+      toast.success("Departamento removido");
 
-  const handleDragStart = (item) => (dragItem.current = item);
-  const handleDropOnFolder = (folder) => {
-    setDepartamentos((prev) =>
-      prev.map((d) =>
-        d.id === dragItem.current.id ? { ...d, parent: folder.name } : d
-      )
-    );
+      setDeleteModal(false);
+      fetchDepartments();
+    } catch {
+      toast.error("Erro ao deletar");
+    }
   };
 
+  /**
+   * =========================
+   * CONTEXT MENU
+   * =========================
+   */
   const handleContextMenu = (e, item) => {
     e.preventDefault();
     setSelectedDepartamento(item);
+
     const x = Math.min(e.pageX, window.innerWidth - 150);
     const y = Math.min(e.pageY, window.innerHeight - 120);
+
     setContextMenu({ x, y });
   };
 
   const closeContextMenu = () => setContextMenu(null);
 
-  const handleRename = () => {
-    setDepartamentos((prev) =>
-      prev.map((d) =>
-        d.id === selectedDepartamento.id ? { ...d, name: renameValue } : d
-      )
-    );
-    setRenameModal(false);
-  };
-
-  const handleDelete = () => {
-    setDepartamentos((prev) =>
-      prev.filter((d) => d.id !== selectedDepartamento.id)
-    );
-    setDeleteModal(false);
-  };
-
-  // =============================
-  // Mobile: toque longo
-  // =============================
-  const handleTouchStart = (item) => {
-    const timer = setTimeout(() => {
-      setSelectedDepartamento(item);
-      setContextMenu({ x: window.innerWidth / 2 - 80, y: window.innerHeight / 2 - 60 });
-    }, 600); // 600ms
-    return timer;
-  };
-
-  const handleTouchEnd = (timer) => clearTimeout(timer);
-
-  // Fechar context menu ao clicar fora
   useEffect(() => {
     if (!contextMenu) return;
+
     const handleClickOutside = (e) => {
       if (!e.target.closest(".context-menu")) closeContextMenu();
     };
+
     document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [contextMenu]);
 
-  // =============================
-  // Função total de pessoas (departamento + subdepartamentos)
-  // =============================
-  const totalPessoas = (depName) => {
-    const subDeps = departamentos.filter(d => d.parent === depName);
-    const subTotal = subDeps.reduce((acc, d) => acc + totalPessoas(d.name), 0);
-    const current = departamentos.find(d => d.name === depName)?.pessoas || 0;
-    return current + subTotal;
-  };
+  /**
+   * =========================
+   * FILTRO
+   * =========================
+   */
+  const filtrados = departamentos.filter((d) =>
+    d.name.toLowerCase().includes(pesquisa.toLowerCase())
+  );
 
-  // =============================
-  // Render
-  // =============================
+  const lista = verMais ? filtrados : filtrados.slice(0, LIMIT);
+
+  /**
+   * =========================
+   * LOADING
+   * =========================
+   */
+  if (loading) {
+    return (
+      <SuperAdminLayout title="Departamentos">
+        <div className="flex flex-col items-center justify-center h-[60vh] text-slate-400">
+          <i className="fas fa-spinner fa-spin text-3xl mb-3"></i>
+          Carregando departamentos...
+        </div>
+      </SuperAdminLayout>
+    );
+  }
+
   return (
     <>
       <title>Departamentos | Mukanda Cloud</title>
+
       <SuperAdminLayout title="Departamentos">
 
-        {/* Breadcrumb */}
-        <div className="flex flex-wrap items-center gap-2 text-sm text-slate-400 mb-4">
-          {currentPath.map((p, i) => (
-            <span key={i} className="flex items-center gap-2">
-              <button
-                onClick={() => goToPath(i)}
-                className="hover:text-cyan-400 cursor-pointer"
-              >
-                {p}
-              </button>
-              {i < currentPath.length - 1 && "/"}
-            </span>
-          ))}
-        </div>
-
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:justify-between gap-2 mb-4">
+        {/* BOTÃO */}
+        <div className="flex justify-end mb-2">
           <button
             onClick={() => setIsModalOpen(true)}
-            className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-900 rounded-lg font-semibold w-full sm:w-auto flex justify-center items-center cursor-pointer"
+            className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-900 rounded-lg font-semibold cursor-pointer"
           >
             <i className="fas fa-plus mr-2"></i>
             Novo Departamento
           </button>
         </div>
 
-        {/* Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-          {departamentosFiltrados.map((dep) => (
-            <div
-              key={dep.id}
-              draggable
-              onDragStart={() => handleDragStart(dep)}
-              onDrop={() => handleDropOnFolder(dep)}
-              onDragOver={(e) => e.preventDefault()}
-              onDoubleClick={() => handleOpen(dep)}
-              onContextMenu={(e) => handleContextMenu(e, dep)}
-              onTouchStart={() => (dep.touchTimer = handleTouchStart(dep))}
-              onTouchEnd={() => handleTouchEnd(dep.touchTimer)}
-              className="bg-slate-900 border border-blue-900 rounded-xl p-4 cursor-pointer hover:border-cyan-500 flex flex-col items-center"
-            >
-              <div className="flex justify-center mb-2">
-                <i className="fas fa-building text-3xl text-cyan-500"></i>
-              </div>
-              <p className="text-sm text-center text-slate-300 truncate w-full">{dep.name}</p>
-              <p className="text-xs text-slate-400">
-                Pessoas: {totalPessoas(dep.name)}
-              </p>
-            </div>
-          ))}
+        {/* PESQUISA */}
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="Pesquisar departamento..."
+            value={pesquisa}
+            onChange={(e) => setPesquisa(e.target.value)}
+            className="p-3 rounded-lg bg-slate-800 text-white border border-blue-900 focus:border-cyan-500 focus:outline-none w-full"
+          />
         </div>
 
-        {/* Context Menu */}
+        {/* EMPTY */}
+        {lista.length === 0 ? (
+          <div className="flex flex-col items-center justify-center text-slate-400 mt-10">
+            <i className="fas fa-building text-4xl mb-3"></i>
+            Nenhum departamento cadastrado
+          </div>
+        ) : (
+          <>
+            {/* GRID */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+              {lista.map((dep) => (
+                <div
+                  key={dep.id}
+                  onContextMenu={(e) => handleContextMenu(e, dep)}
+                  onDoubleClick={() => setPreviewDepartamento(dep)}
+                  className="bg-slate-900 border border-blue-900 rounded-xl p-4 cursor-pointer hover:border-cyan-500 flex flex-col items-center"
+                >
+                  <i className="fas fa-building text-3xl text-cyan-500 mb-2"></i>
+                  <p className="text-sm text-slate-300 truncate w-full text-center">
+                    {dep.name}
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    Pessoas: {dep.pessoas}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* VER MAIS */}
+            {filtrados.length > LIMIT && (
+              <div className="flex justify-center mt-4">
+                <button
+                  onClick={() => setVerMais(!verMais)}
+                  className="px-6 py-2 bg-cyan-500 text-slate-900 font-semibold rounded-lg hover:bg-cyan-400 cursor-pointer"
+                >
+                  {verMais ? "Ver Menos" : "Ver Mais"}
+                </button>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* CONTEXT MENU */}
         {contextMenu && (
           <div
-            className="context-menu fixed z-9999 bg-slate-900 border border-blue-900 rounded-lg w-36 sm:w-40 shadow-lg"
+            className="context-menu fixed z-50 bg-slate-900 border border-blue-900 rounded-lg w-40 shadow-lg"
             style={{ top: contextMenu.y, left: contextMenu.x }}
           >
             <button
-              onClick={() => handleOpen(selectedDepartamento)}
-              className="block px-4 py-2 hover:bg-slate-800 w-full text-left cursor-pointer"
-            >
-              Abrir
-            </button>
-            <button
-              onClick={() => handlePreview(selectedDepartamento)}
+              onClick={() => {
+                setPreviewDepartamento(selectedDepartamento);
+                closeContextMenu();
+              }}
               className="block px-4 py-2 hover:bg-slate-800 w-full text-left cursor-pointer"
             >
               Preview
             </button>
+
             <button
               onClick={() => {
-                setRenameValue(selectedDepartamento.name);
+                setRenameValue("nome", selectedDepartamento.name);
                 setRenameModal(true);
                 closeContextMenu();
               }}
@@ -212,6 +290,7 @@ export default function DepartamentosSuperAdmin() {
             >
               Renomear
             </button>
+
             <button
               onClick={() => {
                 setDeleteModal(true);
@@ -224,46 +303,67 @@ export default function DepartamentosSuperAdmin() {
           </div>
         )}
 
-        {/* Modais */}
+        {/* MODAL CRIAR */}
         <ModalSmall
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           title="Criar Departamento"
           icon="fas fa-plus"
         >
-          <input
-            value={novaDepartamento}
-            onChange={(e) => setNovaDepartamento(e.target.value)}
-            placeholder="Nome do departamento"
-            className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-4"
-          />
-          <button
-            onClick={handleCriarDepartamento}
-            className="w-full py-2 bg-cyan-500 text-slate-900 font-semibold rounded-lg cursor-pointer"
-          >
-            Criar
-          </button>
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+            <input
+              {...register("nome")}
+              placeholder="Nome do departamento"
+              className="p-3 rounded-lg bg-slate-800 text-white border border-blue-900 focus:border-cyan-500 focus:outline-none"
+            />
+
+            {errors.nome && (
+              <p className="text-red-500 text-xs">{errors.nome.message}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-4 py-2 cursor-pointer bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold rounded-lg"
+            >
+              {isSubmitting ? "Criando..." : "Criar"}
+            </button>
+          </form>
         </ModalSmall>
 
+        {/* MODAL RENOMEAR */}
         <ModalSmall
           isOpen={renameModal}
           onClose={() => setRenameModal(false)}
           title="Renomear Departamento"
           icon="fas fa-edit"
         >
-          <input
-            value={renameValue}
-            onChange={(e) => setRenameValue(e.target.value)}
-            className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-4"
-          />
-          <button
-            onClick={handleRename}
-            className="w-full py-2 bg-cyan-500 text-slate-900 rounded-lg cursor-pointer"
+          <form
+            onSubmit={handleSubmitRename(onRename)}
+            className="flex flex-col gap-4"
           >
-            Salvar
-          </button>
+            <input
+              {...registerRename("nome")}
+              className="p-3 rounded-lg bg-slate-800 text-white border border-blue-900 focus:border-cyan-500 focus:outline-none"
+            />
+
+            {renameErrors.nome && (
+              <p className="text-red-500 text-xs">
+                {renameErrors.nome.message}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={isRenaming}
+              className="px-4 py-2 cursor-pointer bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold rounded-lg"
+            >
+              {isRenaming ? "Salvando..." : "Salvar"}
+            </button>
+          </form>
         </ModalSmall>
 
+        {/* DELETE */}
         <ModalSmall
           isOpen={deleteModal}
           onClose={() => setDeleteModal(false)}
@@ -278,47 +378,17 @@ export default function DepartamentosSuperAdmin() {
           </button>
         </ModalSmall>
 
+        {/* PREVIEW */}
         <ModalSmall
           isOpen={!!previewDepartamento}
           onClose={() => setPreviewDepartamento(null)}
-          title="Detalhes do Departamento"
+          title="Detalhes"
           icon="fas fa-eye"
         >
           {previewDepartamento && (
-            <div className="flex flex-col gap-4">
-              <p className="text-slate-300">
-                <strong>Nome:</strong> {previewDepartamento.name}
-              </p>
-              <p className="text-slate-300">
-                <strong>Subdepartamentos:</strong>{" "}
-                {departamentos.filter(d => d.parent === previewDepartamento.name).length}
-              </p>
-              <p className="text-slate-300">
-                <strong>Total de pessoas:</strong> {totalPessoas(previewDepartamento.name)}
-              </p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleOpen(previewDepartamento)}
-                  className="px-4 py-2 bg-cyan-500 text-slate-900 rounded-lg"
-                >
-                  Abrir
-                </button>
-                <button
-                  onClick={() => {
-                    setRenameValue(previewDepartamento.name);
-                    setRenameModal(true);
-                  }}
-                  className="px-4 py-2 bg-yellow-500 text-slate-900 rounded-lg"
-                >
-                  Renomear
-                </button>
-                <button
-                  onClick={() => setDeleteModal(true)}
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg"
-                >
-                  Deletar
-                </button>
-              </div>
+            <div className="flex flex-col gap-2 text-slate-300">
+              <p><strong>Nome:</strong> {previewDepartamento.name}</p>
+              <p><strong>Pessoas:</strong> {previewDepartamento.pessoas}</p>
             </div>
           )}
         </ModalSmall>
