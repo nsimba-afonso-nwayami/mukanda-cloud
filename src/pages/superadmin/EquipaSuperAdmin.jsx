@@ -1,208 +1,437 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
+
 import SuperAdminLayout from "./components/SuperAdminLayout";
 import ModalSmall from "./components/ModalSmall";
 
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import toast from "react-hot-toast";
+
+import { userSchema } from "../../validations/userSchema";
+import {
+  getUsers,
+  createUser,
+  deleteUser,
+  updateUser,
+} from "../../services/userService";
+
+import { getDepartments } from "../../services/departmentService";
+
 export default function EquipaSuperAdmin() {
-  const [departamentos, setDepartamentos] = useState([
-    { id: 1, nome: "Financeiro" },
-    { id: 2, nome: "RH" },
-    { id: 3, nome: "TI" },
-  ]);
+  const [users, setUsers] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const [equipa, setEquipa] = useState([
-    { id: 1, nome: "João Silva", email: "joao@empresa.com", telefone: "912345678", departamento: "Financeiro", nivel: "Gerente", senha: "123456" },
-    { id: 2, nome: "Maria Santos", email: "maria@empresa.com", telefone: "923456789", departamento: "RH", nivel: "Staff", senha: "abcdef" },
-  ]);
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const [editModal, setEditModal] = useState(false);
-  const [senhaModal, setSenhaModal] = useState(false);
-  const [deleteModal, setDeleteModal] = useState(false);
-  const [previewUser, setPreviewUser] = useState(null);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [contextMenu, setContextMenu] = useState(null);
 
-  const [novoUsuario, setNovoUsuario] = useState({
-    nome: "", email: "", telefone: "", senha: "", departamento: "", nivel: "Staff"
+  const [preview, setPreview] = useState(null);
+  const [selected, setSelected] = useState(null);
+  const [context, setContext] = useState(null);
+
+  /**
+   * =========================
+   * FORM CREATE
+   * =========================
+   */
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: yupResolver(userSchema),
   });
 
-  const [editUser, setEditUser] = useState({
-    nome: "", email: "", telefone: "", departamento: "", nivel: ""
+  /**
+   * =========================
+   * FORM UPDATE
+   * =========================
+   */
+  const {
+    register: registerEdit,
+    handleSubmit: handleSubmitEdit,
+    setValue,
+    reset: resetEdit,
+    formState: { errors: editErrors, isSubmitting: isEditing },
+  } = useForm({
+    resolver: yupResolver(userSchema),
   });
 
-  const [novaSenha, setNovaSenha] = useState("");
-
-  // =============================
-  // Ações principais
-  // =============================
-  const handleCriarUsuario = () => {
-    if (!novoUsuario.nome || !novoUsuario.email || !novoUsuario.senha || !novoUsuario.departamento) return;
-    setEquipa([...equipa, { id: Date.now(), ...novoUsuario }]);
-    setNovoUsuario({ nome: "", email: "", telefone: "", senha: "", departamento: "", nivel: "Staff" });
-    setIsModalOpen(false);
-  };
-
-  const handleEditarUsuario = () => {
-    setEquipa(prev =>
-      prev.map(u => u.id === selectedUser.id ? { ...u, ...editUser } : u)
-    );
-    setEditModal(false);
-  };
-
-  const handleEditarSenha = () => {
-    setEquipa(prev =>
-      prev.map(u => u.id === selectedUser.id ? { ...u, senha: novaSenha } : u)
-    );
-    setSenhaModal(false);
-  };
-
-  const handleDelete = () => {
-    setEquipa(prev => prev.filter(u => u.id !== selectedUser.id));
-    setDeleteModal(false);
-  };
-
-  const handlePreview = (user) => {
-    setPreviewUser(user);
-    closeContextMenu();
-  };
-
-  // =============================
-  // Context menu
-  // =============================
-  const handleContextMenu = (e, user) => {
-    e.preventDefault();
-    setSelectedUser(user);
-    const x = Math.min(e.pageX, window.innerWidth - 150);
-    const y = Math.min(e.pageY, window.innerHeight - 140);
-    setContextMenu({ x, y });
-  };
-  const closeContextMenu = () => setContextMenu(null);
-
-  // =============================
-  // Mobile: toque longo
-  // =============================
-  const handleTouchStart = (user) => {
-    const timer = setTimeout(() => {
-      setSelectedUser(user);
-      setContextMenu({ x: window.innerWidth / 2 - 80, y: window.innerHeight / 2 - 70 });
-    }, 600);
-    return timer;
-  };
-  const handleTouchEnd = (timer) => clearTimeout(timer);
-
+  /**
+   * =========================
+   * LOAD DATA
+   * =========================
+   */
   useEffect(() => {
-    if (!contextMenu) return;
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [u, d] = await Promise.all([
+        getUsers(),
+        getDepartments(),
+      ]);
+
+      setUsers(u);
+      setDepartments(d);
+    } catch {
+      toast.error("Erro ao carregar dados");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * =========================
+   * CREATE USER
+   * =========================
+   */
+  const onSubmit = async (data) => {
+    try {
+      await createUser(data);
+
+      toast.success("Usuário criado com sucesso!");
+      reset();
+      setModalOpen(false);
+      loadData();
+    } catch {
+      toast.error("Erro ao criar usuário");
+    }
+  };
+
+  /**
+   * =========================
+   * OPEN EDIT MODAL
+   * =========================
+   */
+  const openEdit = (user) => {
+    setSelected(user);
+
+    setValue("first_name", user.first_name || "");
+    setValue("last_name", user.last_name || "");
+    setValue("email", user.email || "");
+    setValue("department", user.department || "");
+    setValue("role", user.role || "");
+
+    setEditModal(true);
+    setContext(null);
+  };
+
+  /**
+   * =========================
+   * UPDATE USER
+   * =========================
+   */
+  const onUpdate = async (data) => {
+    try {
+      await updateUser(selected.id, data);
+
+      toast.success("Usuário atualizado com sucesso!");
+      setEditModal(false);
+      resetEdit();
+      loadData();
+    } catch {
+      toast.error("Erro ao atualizar usuário");
+    }
+  };
+
+  /**
+   * =========================
+   * DELETE USER
+   * =========================
+   */
+  const handleDelete = async () => {
+    try {
+      await deleteUser(selected.id);
+
+      toast.success("Usuário removido");
+      setContext(null);
+      loadData();
+    } catch {
+      toast.error("Erro ao remover usuário");
+    }
+  };
+
+  /**
+   * =========================
+   * CONTEXT MENU
+   * =========================
+   */
+  const openContext = (e, user) => {
+    e.preventDefault();
+    setSelected(user);
+
+    setContext({
+      x: Math.min(e.pageX, window.innerWidth - 160),
+      y: Math.min(e.pageY, window.innerHeight - 140),
+    });
+  };
+
+  const closeContext = () => setContext(null);
+
+  /**
+   * =========================
+   * CLOSE CONTEXT ON CLICK OUTSIDE
+   * =========================
+   */
+  useEffect(() => {
+    if (!context) return;
+
     const handleClickOutside = (e) => {
-      if (!e.target.closest(".context-menu")) closeContextMenu();
+      if (!e.target.closest(".context-menu")) {
+        closeContext();
+      }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-    };
-  }, [contextMenu]);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [context]);
+
+  /**
+   * =========================
+   * ROLE LABEL
+   * =========================
+   */
+  const roleLabel = (r) => {
+    if (r === "dept_manager") return "Gerente";
+    if (r === "team_member") return "Staff";
+    return r;
+  };
+
+  /**
+   * =========================
+   * LOADING
+   * =========================
+   */
+  if (loading) {
+    return (
+      <SuperAdminLayout title="Equipa">
+        <div className="flex flex-col items-center justify-center h-[60vh] text-slate-400">
+          <i className="fas fa-spinner fa-spin text-3xl mb-3"></i>
+          Carregando usuários...
+        </div>
+      </SuperAdminLayout>
+    );
+  }
 
   return (
     <>
       <title>Equipa | Mukanda Cloud</title>
+
       <SuperAdminLayout title="Equipa">
 
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:justify-between gap-2 mb-4">
+        {/* BOTÃO */}
+        <div className="flex justify-end mb-2">
           <button
-            onClick={() => setIsModalOpen(true)}
-            className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-900 rounded-lg font-semibold w-full sm:w-auto flex justify-center items-center cursor-pointer"
+            onClick={() => setModalOpen(true)}
+            className="px-4 py-2 cursor-pointer bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold rounded-lg"
           >
             <i className="fas fa-user-plus mr-2"></i>
             Novo Usuário
           </button>
         </div>
 
-        {/* Grid de usuários */}
+        {/* GRID */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {equipa.map(user => (
+          {users.map((u) => (
             <div
-              key={user.id}
-              onContextMenu={(e) => handleContextMenu(e, user)}
-              onTouchStart={() => (user.touchTimer = handleTouchStart(user))}
-              onTouchEnd={() => handleTouchEnd(user.touchTimer)}
-              className="bg-slate-900 border border-blue-900 rounded-xl p-4 cursor-pointer hover:border-cyan-500 flex flex-col items-center"
+              key={u.id}
+              onContextMenu={(e) => openContext(e, u)}
+              onClick={() => setPreview(u)}
+              className="bg-slate-900 border border-blue-900 rounded-xl p-4 cursor-pointer hover:border-cyan-500"
             >
-              <div className="flex justify-center mb-2">
-                <i className={`fas fa-user text-3xl ${user.nivel === "Gerente" ? "text-yellow-400" : "text-green-400"}`}></i>
-              </div>
-              <p className="text-sm text-center text-slate-300 truncate w-full">{user.nome}</p>
-              <p className="text-xs text-slate-400 text-center">{user.nivel}</p>
-              <p className="text-xs text-slate-400 text-center">{user.departamento}</p>
-              <p className="text-xs text-slate-400 truncate text-center">{user.email}</p>
+              <p className="text-center text-slate-200 font-semibold">
+                {u.first_name} {u.last_name}
+              </p>
+
+              <p className="text-center text-slate-400 text-xs">
+                {u.email}
+              </p>
+
+              <p className="text-center text-slate-400 text-xs">
+                {roleLabel(u.role)}
+              </p>
+
+              <p className="text-center text-slate-400 text-xs">
+                {u.department_name}
+              </p>
             </div>
           ))}
         </div>
 
-        {/* Context Menu */}
-        {contextMenu && (
-          <div className="context-menu fixed z-9999 bg-slate-900 border border-blue-900 rounded-lg w-36 sm:w-44 shadow-lg"
-            style={{ top: contextMenu.y, left: contextMenu.x }}>
-            <button onClick={() => handlePreview(selectedUser)} className="block px-4 py-2 hover:bg-slate-800 w-full text-left cursor-pointer">Preview</button>
-            <button onClick={() => { setEditUser({ nome: selectedUser.nome, email: selectedUser.email, telefone: selectedUser.telefone, departamento: selectedUser.departamento, nivel: selectedUser.nivel }); setEditModal(true); closeContextMenu(); }} className="block px-4 py-2 hover:bg-slate-800 w-full text-left cursor-pointer">Editar Dados</button>
-            <button onClick={() => { setNovaSenha(""); setSenhaModal(true); closeContextMenu(); }} className="block px-4 py-2 hover:bg-slate-800 w-full text-left cursor-pointer">Editar Senha</button>
-            <button onClick={() => { setDeleteModal(true); closeContextMenu(); }} className="block px-4 py-2 text-red-400 hover:bg-slate-800 w-full text-left cursor-pointer">Excluir</button>
+        {/* EMPTY STATE */}
+        {users.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-[40vh] text-slate-500">
+            <i className="fas fa-users text-4xl mb-2"></i>
+            Nenhum usuário encontrado
           </div>
         )}
 
-        {/* Modal Criar Usuário */}
-        <ModalSmall isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Novo Usuário" icon="fas fa-user-plus">
-          <input value={novoUsuario.nome} onChange={(e) => setNovoUsuario({ ...novoUsuario, nome: e.target.value })} placeholder="Nome" className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-2"/>
-          <input value={novoUsuario.email} onChange={(e) => setNovoUsuario({ ...novoUsuario, email: e.target.value })} placeholder="Email" className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-2"/>
-          <input value={novoUsuario.telefone} onChange={(e) => setNovoUsuario({ ...novoUsuario, telefone: e.target.value })} placeholder="Telefone" className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-2"/>
-          <input type="password" value={novoUsuario.senha} onChange={(e) => setNovoUsuario({ ...novoUsuario, senha: e.target.value })} placeholder="Senha" className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-2"/>
-          <select value={novoUsuario.departamento} onChange={(e) => setNovoUsuario({ ...novoUsuario, departamento: e.target.value })} className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-2">
-            <option value="">Selecionar Departamento</option>
-            {departamentos.map(dep => <option key={dep.id} value={dep.nome}>{dep.nome}</option>)}
-          </select>
-          <select value={novoUsuario.nivel} onChange={(e) => setNovoUsuario({ ...novoUsuario, nivel: e.target.value })} className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-4">
-            <option value="Gerente">Gerente</option>
-            <option value="Staff">Staff</option>
-          </select>
-          <button onClick={handleCriarUsuario} className="w-full py-2 bg-cyan-500 text-slate-900 font-semibold rounded-lg cursor-pointer">Adicionar</button>
+        {/* CONTEXT MENU */}
+        {context && (
+          <div
+            className="context-menu fixed bg-slate-900 border border-blue-900 rounded-lg w-40 z-50"
+            style={{ top: context.y, left: context.x }}
+          >
+            <button
+              onClick={() => setPreview(selected)}
+              className="w-full text-left px-4 py-2 hover:bg-slate-800"
+            >
+              Preview
+            </button>
+
+            <button
+              onClick={() => openEdit(selected)}
+              className="w-full text-left px-4 py-2 hover:bg-slate-800"
+            >
+              Editar
+            </button>
+
+            <button
+              onClick={handleDelete}
+              className="w-full text-left px-4 py-2 text-red-400 hover:bg-slate-800"
+            >
+              Excluir
+            </button>
+          </div>
+        )}
+
+        {/* MODAL CREATE */}
+        <ModalSmall
+          isOpen={modalOpen}
+          onClose={() => setModalOpen(false)}
+          title="Novo Usuário"
+          icon="fas fa-user-plus"
+        >
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+
+            <input
+              {...register("first_name")}
+              placeholder="Nome"
+              className="p-3 rounded-lg bg-slate-800 text-white border border-blue-900 focus:border-cyan-500 focus:outline-none"
+            />
+            <p className="text-red-500 text-xs">{errors.first_name?.message}</p>
+
+            <input
+              {...register("last_name")}
+              placeholder="Apelido"
+              className="p-3 rounded-lg bg-slate-800 text-white border border-blue-900 focus:border-cyan-500 focus:outline-none"
+            />
+            <p className="text-red-500 text-xs">{errors.last_name?.message}</p>
+
+            <input
+              {...register("email")}
+              placeholder="Email"
+              className="p-3 rounded-lg bg-slate-800 text-white border border-blue-900 focus:border-cyan-500 focus:outline-none"
+            />
+            <p className="text-red-400 text-xs">{errors.email?.message}</p>
+
+            <input
+              type="password"
+              {...register("password")}
+              placeholder="Senha"
+              className="p-3 rounded-lg bg-slate-800 text-white border border-blue-900 focus:border-cyan-500 focus:outline-none"
+            />
+            <p className="text-red-400 text-xs">{errors.password?.message}</p>
+
+            <select
+              {...register("department")}
+              className="p-3 rounded-lg bg-slate-800 text-white border border-blue-900 focus:border-cyan-500 focus:outline-none"
+            >
+              <option value="">Departamento</option>
+              {departments.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
+
+            <select
+              {...register("role")}
+              className="p-3 rounded-lg bg-slate-800 text-white border border-blue-900 focus:border-cyan-500 focus:outline-none"
+            >
+              <option value="team_member">Staff</option>
+              <option value="dept_manager">Gerente</option>
+            </select>
+
+            <button
+              disabled={isSubmitting}
+              className="px-4 py-2 cursor-pointer bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold rounded-lg"
+            >
+              {isSubmitting ? "Criando..." : "Criar"}
+            </button>
+          </form>
         </ModalSmall>
 
-        {/* Modal Editar Dados */}
-        <ModalSmall isOpen={editModal} onClose={() => setEditModal(false)} title="Editar Usuário" icon="fas fa-edit">
-          <input value={editUser.nome} onChange={(e) => setEditUser({ ...editUser, nome: e.target.value })} placeholder="Nome" className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-2"/>
-          <input value={editUser.email} onChange={(e) => setEditUser({ ...editUser, email: e.target.value })} placeholder="Email" className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-2"/>
-          <input value={editUser.telefone} onChange={(e) => setEditUser({ ...editUser, telefone: e.target.value })} placeholder="Telefone" className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-2"/>
-          <select value={editUser.departamento} onChange={(e) => setEditUser({ ...editUser, departamento: e.target.value })} className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-2">
-            {departamentos.map(dep => <option key={dep.id} value={dep.nome}>{dep.nome}</option>)}
-          </select>
-          <select value={editUser.nivel} onChange={(e) => setEditUser({ ...editUser, nivel: e.target.value })} className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-4">
-            <option value="Gerente">Gerente</option>
-            <option value="Staff">Staff</option>
-          </select>
-          <button onClick={handleEditarUsuario} className="w-full py-2 bg-cyan-500 text-slate-900 font-semibold rounded-lg cursor-pointer">Salvar Alterações</button>
+        {/* MODAL EDIT */}
+        <ModalSmall
+          isOpen={editModal}
+          onClose={() => setEditModal(false)}
+          title="Editar Usuário"
+          icon="fas fa-edit"
+        >
+          <form onSubmit={handleSubmitEdit(onUpdate)} className="flex flex-col gap-4">
+
+            <input
+              {...registerEdit("first_name")}
+              className="p-3 rounded-lg bg-slate-800 text-white border border-blue-900 focus:border-cyan-500 focus:outline-none"
+            />
+
+            <input
+              {...registerEdit("last_name")}
+              className="p-3 rounded-lg bg-slate-800 text-white border border-blue-900 focus:border-cyan-500 focus:outline-none"
+            />
+
+            <input
+              {...registerEdit("email")}
+              className="p-3 rounded-lg bg-slate-800 text-white border border-blue-900 focus:border-cyan-500 focus:outline-none"
+            />
+
+            <select
+              {...register("department")}
+              className="p-3 rounded-lg bg-slate-800 text-white border border-blue-900 focus:border-cyan-500 focus:outline-none"
+            >
+              <option value="">Departamento</option>
+              {departments.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
+
+            <select
+              {...registerEdit("role")}
+              className="p-3 rounded-lg bg-slate-800 text-white border border-blue-900 focus:border-cyan-500 focus:outline-none"
+            >
+              <option value="team_member">Staff</option>
+              <option value="dept_manager">Gerente</option>
+            </select>
+
+            <button
+              disabled={isEditing}
+              className="px-4 py-2 cursor-pointer bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold rounded-lg"
+            >
+              {isEditing ? "Salvando..." : "Salvar"}
+            </button>
+          </form>
         </ModalSmall>
 
-        {/* Modal Editar Senha */}
-        <ModalSmall isOpen={senhaModal} onClose={() => setSenhaModal(false)} title="Editar Senha" icon="fas fa-key">
-          <input type="password" value={novaSenha} onChange={(e) => setNovaSenha(e.target.value)} placeholder="Nova Senha" className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-4"/>
-          <button onClick={handleEditarSenha} className="w-full py-2 bg-cyan-500 text-slate-900 font-semibold rounded-lg cursor-pointer">Salvar Senha</button>
-        </ModalSmall>
-
-        {/* Modal Excluir */}
-        <ModalSmall isOpen={deleteModal} onClose={() => setDeleteModal(false)} title="Confirmar Exclusão" icon="fas fa-trash">
-          <button onClick={handleDelete} className="w-full py-2 bg-red-500 text-white rounded-lg cursor-pointer">Excluir</button>
-        </ModalSmall>
-
-        {/* Modal Preview */}
-        <ModalSmall isOpen={!!previewUser} onClose={() => setPreviewUser(null)} title="Detalhes do Usuário" icon="fas fa-eye">
-          {previewUser && (
-            <div className="flex flex-col gap-2">
-              <p className="text-slate-300"><strong>Nome:</strong> {previewUser.nome}</p>
-              <p className="text-slate-300"><strong>Email:</strong> {previewUser.email}</p>
-              <p className="text-slate-300"><strong>Telefone:</strong> {previewUser.telefone}</p>
-              <p className="text-slate-300"><strong>Departamento:</strong> {previewUser.departamento}</p>
-              <p className="text-slate-300"><strong>Nível:</strong> {previewUser.nivel}</p>
+        {/* PREVIEW */}
+        <ModalSmall
+          isOpen={!!preview}
+          onClose={() => setPreview(null)}
+          title="Preview"
+          icon="fas fa-eye"
+        >
+          {preview && (
+            <div className="flex flex-col gap-2 text-slate-300">
+              <p><strong>Nome:</strong> {preview.first_name} {preview.last_name}</p>
+              <p><strong>Email:</strong> {preview.email}</p>
+              <p><strong>Role:</strong> {roleLabel(preview.role)}</p>
+              <p><strong>Departamento:</strong> {preview.department_name}</p>
             </div>
           )}
         </ModalSmall>
@@ -211,3 +440,4 @@ export default function EquipaSuperAdmin() {
     </>
   );
 }
+
