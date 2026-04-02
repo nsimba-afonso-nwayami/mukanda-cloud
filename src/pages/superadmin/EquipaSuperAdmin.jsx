@@ -24,6 +24,7 @@ export default function EquipaSuperAdmin() {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editModal, setEditModal] = useState(false);
+  const [deleteModal, setDeleteModal] = useState(false); // Novo estado para modal de excluir
 
   const [preview, setPreview] = useState(null);
   const [selected, setSelected] = useState(null);
@@ -127,12 +128,12 @@ export default function EquipaSuperAdmin() {
     }
   };
 
+  // Função disparada pelo botão dentro do Modal de Exclusão
   const handleDelete = async () => {
-    if (!window.confirm("Tem certeza que deseja excluir este usuário?")) return;
     try {
       await deleteUser(selected.id);
       toast.success("Usuário removido");
-      setContext(null);
+      setDeleteModal(false);
       loadData();
     } catch {
       toast.error("Erro ao remover usuário");
@@ -251,7 +252,7 @@ export default function EquipaSuperAdmin() {
           >
             <button onClick={() => { setPreview(selected); closeContext(); }} className="w-full text-left px-4 py-2 hover:bg-slate-800 text-slate-300">Preview</button>
             <button onClick={() => openEdit(selected)} className="w-full text-left px-4 py-2 hover:bg-slate-800 text-slate-300">Editar</button>
-            <button onClick={handleDelete} className="w-full text-left px-4 py-2 text-red-400 hover:bg-slate-800">Excluir</button>
+            <button onClick={() => { setDeleteModal(true); closeContext(); }} className="w-full text-left px-4 py-2 text-red-400 hover:bg-slate-800">Excluir</button>
           </div>
         )}
 
@@ -335,6 +336,26 @@ export default function EquipaSuperAdmin() {
               {isEditing ? "Salvando..." : "Salvar"}
             </button>
           </form>
+        </ModalSmall>
+
+        {/* MODAL DELETE */}
+        <ModalSmall
+          isOpen={deleteModal}
+          onClose={() => setDeleteModal(false)}
+          title="Confirmar Exclusão"
+          icon="fas fa-trash"
+        >
+          <div className="flex flex-col gap-4 text-center">
+            <p className="text-slate-300">
+              Deseja realmente excluir o utilizador <strong>{selected?.first_name} {selected?.last_name}</strong>? Esta ação não pode ser desfeita.
+            </p>
+            <button
+              onClick={handleDelete}
+              className="w-full py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-colors cursor-pointer"
+            >
+              Confirmar Exclusão
+            </button>
+          </div>
         </ModalSmall>
 
         {/* PREVIEW */}
