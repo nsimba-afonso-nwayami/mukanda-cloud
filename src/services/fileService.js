@@ -89,7 +89,6 @@ export const createFolder = async (data) => {
     name: data.nome,
     node_type: "folder",
     parent: data.parent || null,
-    // Prioridade: 1. Dept vindo do form | 2. Dept do user logado | 3. Nulo
     department: data.department || user?.dept_id || user?.department || null,
   };
 
@@ -97,23 +96,50 @@ export const createFolder = async (data) => {
   return getData(response);
 };
 
+/**
+ * UPLOAD FILE - CORREÇÃO ERRO 400
+ */
 export const uploadFile = async (file, parentId = null) => {
   const user = getUser();
   const formData = new FormData();
 
-  formData.append("file_field", file);
+  formData.append("file", file); // Verifique se o backend espera "file" ou "file_field"
   formData.append("node_type", "file");
+  formData.append("name", file.name);
   
-  if (parentId) formData.append("parent", parentId);
+  if (parentId) {
+    formData.append("parent", parentId);
+  }
 
-  const deptId = user?.dept_id || user?.department;
-  if (deptId) formData.append("department", deptId);
+  // Lógica idêntica ao createFolder:
+  // Tentamos o dept_id do user, se não existir, buscamos o primeiro disponível
+  let deptId = user?.dept_id || user?.department;
+  
+  if (!deptId) {
+    try {
+      const { getDepartments } = await import("./departmentService");
+      const depts = await getDepartments();
+      if (depts && depts.length > 0) {
+        deptId = depts[0].id;
+      }
+    } catch (e) {
+      console.error("Não foi possível recuperar departamentos para o upload", e);
+    }
+  }
 
-  const response = await api.post("files/nodes/", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  if (deptId) {
+    formData.append("department", deptId);
+  }
 
-  return getData(response);
+  try {
+    const response = await api.post("files/nodes/", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return getData(response);
+  } catch (error) {
+    console.error("Erro detalhado no Upload (400):", error.response?.data);
+    throw error;
+  }
 };
 
 export const updateNode = async (id, data) => {
@@ -125,22 +151,18 @@ export const deleteNode = async (id) => {
   await api.delete(`files/nodes/${id}/`);
 };
 
+/**
+ * DOWNLOAD FILE - CORREÇÃO ERRO 404
+ */
 export const downloadFile = async (id, filename) => {
-  const token = getToken();
-  const baseURL = api.defaults.baseURL.endsWith('/') 
-    ? api.defaults.baseURL 
-    : `${api.defaults.baseURL}/`;
-    
-  const url = `${baseURL}files/nodes/${id}/download/`;
-
   try {
-    const response = await fetch(url, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    // Usando a instância do axios para aproveitar headers de auth
+    const response = await api.get(`files/nodes/${id}/download/`, {
+      responseType: 'blob', // Crítico para arquivos binários
     });
 
-    if (!response.ok) throw new Error("Falha no download");
-
-    const blob = await response.blob();
+    // Cria o link temporário para o download
+    const blob = new Blob([response.data]);
     const objectUrl = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     
@@ -149,11 +171,13 @@ export const downloadFile = async (id, filename) => {
     document.body.appendChild(anchor);
     anchor.click();
     
+    // Limpeza
     document.body.removeChild(anchor);
-    setTimeout(() => URL.revokeObjectURL(objectUrl), 10000);
+    URL.revokeObjectURL(objectUrl);
   } catch (error) {
     console.error("Erro ao descarregar ficheiro:", error);
-    throw error;
+    // Se der 404 aqui, tente remover a barra final na string: `files/nodes/${id}/download`
+    throw new Error("Arquivo não encontrado no servidor.");
   }
 };
 
