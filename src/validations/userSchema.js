@@ -28,3 +28,24 @@ export const userSchema = yup.object().shape({
 export const userUpdateSchema = yup.object().shape({
   ...baseFields,
 });
+
+// Schema para o Perfil (Configurações)
+export const profileUpdateSchema = yup.object().shape({
+  first_name: yup.string().required("Nome obrigatório"),
+  last_name: yup.string().required("Apelido obrigatório"),
+  email: yup.string().email("Email inválido").required("Email obrigatório"),
+});
+
+// Schema para a Senha (Configurações)
+export const passwordUpdateSchema = yup.object().shape({
+  current_password: yup.string().required("Senha atual obrigatória"),
+  password: yup
+    .string()
+    .min(6, "A nova senha deve ter pelo menos 6 caracteres")
+    .required("Nova senha obrigatória"),
+  confirmaSenha: yup
+    .string()
+    .oneOf([yup.ref("password"), null], "As senhas não coincidem")
+    .required("Confirmação obrigatória"),
+});
+
