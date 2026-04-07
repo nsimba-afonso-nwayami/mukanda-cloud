@@ -159,7 +159,7 @@ export default function ArquivosSuperAdmin() {
             <span key={i} className="flex items-center gap-2 min-w-0">
               <button 
                 onClick={() => setCurrentPath(currentPath.slice(0, i + 1))} 
-                className="hover:text-cyan-400 font-medium cursor-pointer transition truncate max-w-[120px]"
+                className="hover:text-cyan-400 font-medium cursor-pointer transition truncate max-w-30"
                 title={p.name}
               >
                 {i === 0 ? <i className="fas fa-home"></i> : p.name}
@@ -188,7 +188,7 @@ export default function ArquivosSuperAdmin() {
 
         {/* Feedback de Upload */}
         {uploadQueue.length > 0 && (
-          <div className="fixed bottom-6 right-6 z-[999] w-72 space-y-3">
+          <div className="fixed bottom-6 right-6 z-999 w-72 space-y-3">
             {uploadQueue.map(u => (
               <div key={u.id} className="bg-slate-900 border border-cyan-500 p-4 rounded-xl shadow-2xl animate-pulse">
                 <div className="flex items-center gap-3">
@@ -201,7 +201,7 @@ export default function ArquivosSuperAdmin() {
         )}
 
         {/* Grid Principal */}
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-4 min-h-[400px] p-2">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-4 min-h-100 p-2">
           {loading ? (
              <div className="col-span-full flex flex-col items-center justify-center py-20 text-slate-500 italic">
                 <i className="fas fa-sync animate-spin text-3xl mb-3 text-cyan-500"></i>
@@ -237,7 +237,7 @@ export default function ArquivosSuperAdmin() {
 
         {/* Context Menu - Nomes truncados para não quebrar a largura do menu */}
         {contextMenu && (
-          <div className="fixed z-[9999] bg-slate-900 border border-blue-900 rounded-xl w-48 shadow-2xl py-1" style={{ top: contextMenu.y, left: contextMenu.x }}>
+          <div className="fixed z-9999 bg-slate-900 border border-blue-900 rounded-xl w-48 shadow-2xl py-1" style={{ top: contextMenu.y, left: contextMenu.x }}>
             <div className="px-4 py-2 text-[10px] text-slate-500 border-b border-blue-900/50 truncate font-bold uppercase">
               {selectedItem?.name}
             </div>
@@ -245,7 +245,7 @@ export default function ArquivosSuperAdmin() {
             <button disabled={isDownloading} onClick={() => handleDownloadAction(selectedItem.id, selectedItem.name)} className="w-full px-4 py-2 text-left text-sm hover:bg-cyan-500 hover:text-slate-900 flex items-center gap-3 disabled:opacity-50">
               <i className={`fas ${isDownloading ? 'fa-spinner animate-spin' : 'fa-download'} text-xs`}></i> Download
             </button>
-            <div className="h-[1px] bg-blue-900/50 my-1"></div>
+            <div className="h-px bg-blue-900/50 my-1"></div>
             <button onClick={() => { setRenameValue("nome", selectedItem.name); setRenameModal(true); setContextMenu(null); }} className="w-full px-4 py-2 text-left text-sm hover:bg-cyan-500 hover:text-slate-900 flex items-center gap-3"><i className="fas fa-edit text-xs"></i> Renomear</button>
             <button onClick={() => { setDeleteModal(true); setContextMenu(null); }} className="w-full px-4 py-2 text-left text-sm hover:bg-red-500 text-red-400 hover:text-white flex items-center gap-3"><i className="fas fa-trash-alt text-xs"></i> Eliminar</button>
           </div>
@@ -294,7 +294,7 @@ export default function ArquivosSuperAdmin() {
 
         {/* Modal: PREVIEW - Título truncado no header */}
         <ModalSmall isOpen={!!previewFile} onClose={() => setPreviewFile(null)} 
-          title={<span className="truncate block max-w-[200px]" title={previewFile?.name}>{previewFile?.name}</span>} 
+          title={<span className="truncate block max-w-50" title={previewFile?.name}>{previewFile?.name}</span>} 
           icon="fas fa-eye">
           <div className="flex flex-col items-center">
             {previewFile?.name.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
