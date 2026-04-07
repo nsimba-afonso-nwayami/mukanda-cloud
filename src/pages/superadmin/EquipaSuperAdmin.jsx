@@ -23,6 +23,17 @@ export default function EquipaSuperAdmin() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Identificação do SuperAdmin logado via localStorage
+  const [currentUserId, setCurrentUserId] = useState(null);
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user"); 
+    if (savedUser) {
+      const parsed = JSON.parse(savedUser);
+      setCurrentUserId(parsed.id || parsed.pk); 
+    }
+  }, []);
+
   // Modais e Seleção
   const [modalOpen, setModalOpen] = useState(false);
   const [editModal, setEditModal] = useState(false);
@@ -112,7 +123,6 @@ export default function EquipaSuperAdmin() {
     }
   };
 
-  // Handlers de Context Menu
   const handleOpenContext = (e, user) => {
     e.preventDefault();
     setSelected(user);
@@ -128,6 +138,7 @@ export default function EquipaSuperAdmin() {
   const roleLabel = (r) => {
     if (r === "dept_manager") return "Gerente";
     if (r === "team_member") return "Staff";
+    if (r === "super_admin") return "Super Admin";
     return r;
   };
 
@@ -150,7 +161,7 @@ export default function EquipaSuperAdmin() {
         <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-4 mb-6">
           <button 
             onClick={() => { reset(); setModalOpen(true); }} 
-            className="w-full sm:w-auto px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-900 rounded-xl font-bold transition active:scale-95 flex items-center justify-center cursor-pointer"
+            className="w-full sm:w-auto px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-900 rounded-xl font-bold transition active:scale-95 flex items-center justify-center cursor-pointer shadow-lg shadow-cyan-500/20"
           >
             <i className="fas fa-user-plus mr-2"></i> Novo Utilizador
           </button>
@@ -180,13 +191,13 @@ export default function EquipaSuperAdmin() {
                 key={u.id}
                 onContextMenu={(e) => handleOpenContext(e, u)}
                 onClick={() => setPreview(u)}
-                className="group bg-slate-900 border border-blue-900/50 rounded-2xl p-5 cursor-pointer hover:border-cyan-500 hover:bg-slate-800/40 transition-all flex flex-col items-center text-center shadow-xl shadow-black/20"
+                className={`group bg-slate-900 border ${u.id === currentUserId ? 'border-cyan-500 shadow-lg shadow-cyan-500/10' : 'border-blue-900/50'} rounded-2xl p-5 cursor-pointer hover:border-cyan-500 hover:bg-slate-800/40 transition-all flex flex-col items-center text-center`}
               >
                 <div className="w-16 h-16 rounded-full bg-blue-900/30 border border-blue-900 flex items-center justify-center text-2xl text-cyan-500 mb-3 group-hover:scale-110 transition-transform">
-                  <i className="fas fa-user-circle"></i>
+                  <i className={u.id === currentUserId ? "fas fa-user-shield text-amber-400" : "fas fa-user-circle"}></i>
                 </div>
                 <p className="text-sm text-white font-bold truncate w-full mb-1">
-                  {u.first_name} {u.last_name}
+                  {u.first_name} {u.last_name} {u.id === currentUserId && <span className="text-[10px] text-cyan-400 block font-normal">(Eu)</span>}
                 </p>
                 <p className="text-[10px] text-slate-400 truncate w-full mb-2 italic">{u.email}</p>
                 <span className="px-3 py-1 rounded-full bg-slate-800 border border-blue-900 text-[9px] text-cyan-400 font-bold uppercase tracking-wider">
@@ -202,131 +213,88 @@ export default function EquipaSuperAdmin() {
           )}
         </div>
 
-        {/* Context Menu */}
+        {/* Context Menu com Lógica de Bloqueio */}
         {contextMenu && (
           <div 
-            className="fixed z-9999 bg-slate-900 border border-blue-900 rounded-xl w-48 shadow-2xl py-1" 
+            className="fixed z-9999 bg-slate-900 border border-blue-900 rounded-xl w-48 shadow-2xl py-1 overflow-hidden" 
             style={{ top: contextMenu.y, left: contextMenu.x }}
           >
-            <div className="px-4 py-2 text-[10px] text-slate-500 border-b border-blue-900/50 truncate font-black uppercase">
-              {selected?.first_name} {selected?.last_name}
+            <div className="px-4 py-2 text-[10px] text-slate-500 border-b border-blue-900/50 truncate font-black uppercase tracking-widest">
+              {selected?.first_name} {selected?.id === currentUserId ? "(Protegido)" : ""}
             </div>
-            <button onClick={() => setPreview(selected)} className="w-full px-4 py-2.5 text-left text-sm hover:bg-cyan-500 hover:text-slate-900 flex items-center gap-3 transition-colors cursor-pointer">
+            
+            <button onClick={() => setPreview(selected)} className="w-full px-4 py-2.5 text-left text-sm hover:bg-cyan-500 hover:text-slate-900 flex items-center gap-3 transition-colors cursor-pointer font-bold">
               <i className="fas fa-eye text-xs"></i> Ver Perfil
             </button>
-            <button onClick={() => openEdit(selected)} className="w-full px-4 py-2.5 text-left text-sm hover:bg-cyan-500 hover:text-slate-900 flex items-center gap-3 transition-colors cursor-pointer">
-              <i className="fas fa-edit text-xs"></i> Editar
-            </button>
-            <div className="h-px bg-blue-900/50 my-1"></div>
-            <button onClick={() => setDeleteModal(true)} className="w-full px-4 py-2.5 text-left text-sm hover:bg-red-500 text-red-400 hover:text-white flex items-center gap-3 transition-colors cursor-pointer">
-              <i className="fas fa-trash-alt text-xs"></i> Eliminar
-            </button>
+
+            {/* Proteção: SuperAdmin não edita nem elimina a si próprio por aqui */}
+            {selected?.id !== currentUserId && (
+              <>
+                <button onClick={() => openEdit(selected)} className="w-full px-4 py-2.5 text-left text-sm hover:bg-cyan-500 hover:text-slate-900 flex items-center gap-3 transition-colors cursor-pointer font-bold">
+                  <i className="fas fa-edit text-xs"></i> Editar
+                </button>
+                <div className="h-px bg-blue-900/50 my-1"></div>
+                <button onClick={() => setDeleteModal(true)} className="w-full px-4 py-2.5 text-left text-sm hover:bg-red-500 text-red-400 hover:text-white flex items-center gap-3 transition-colors cursor-pointer font-bold">
+                  <i className="fas fa-trash-alt text-xs"></i> Eliminar
+                </button>
+              </>
+            )}
           </div>
         )}
 
-        {/* Modal: NOVO UTILIZADOR (Com Validações) */}
+        {/* Modal: NOVO UTILIZADOR */}
         <ModalSmall isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Novo Utilizador" icon="fas fa-user-plus">
           <form onSubmit={handleSubmit(handleCreate)} className="grid grid-cols-1 gap-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <input 
-                  {...register("first_name")} 
-                  placeholder="Nome" 
-                  className={`w-full p-3 bg-slate-800 border ${errors.first_name ? 'border-red-500' : 'border-blue-900'} text-white rounded-xl outline-none focus:border-cyan-500`} 
-                />
+                <input {...register("first_name")} placeholder="Nome" className={`w-full p-3 bg-slate-800 border ${errors.first_name ? 'border-red-500' : 'border-blue-900'} text-white rounded-xl outline-none focus:border-cyan-500`} />
                 {errors.first_name && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase italic">{errors.first_name.message}</p>}
               </div>
               <div>
-                <input 
-                  {...register("last_name")} 
-                  placeholder="Apelido" 
-                  className={`w-full p-3 bg-slate-800 border ${errors.last_name ? 'border-red-500' : 'border-blue-900'} text-white rounded-xl outline-none focus:border-cyan-500`} 
-                />
+                <input {...register("last_name")} placeholder="Apelido" className={`w-full p-3 bg-slate-800 border ${errors.last_name ? 'border-red-500' : 'border-blue-900'} text-white rounded-xl outline-none focus:border-cyan-500`} />
                 {errors.last_name && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase italic">{errors.last_name.message}</p>}
               </div>
             </div>
-
             <div>
-              <input 
-                {...register("email")} 
-                placeholder="Email Corporativo" 
-                className={`w-full p-3 bg-slate-800 border ${errors.email ? 'border-red-500' : 'border-blue-900'} text-white rounded-xl outline-none focus:border-cyan-500`} 
-              />
+              <input {...register("email")} placeholder="Email Corporativo" className={`w-full p-3 bg-slate-800 border ${errors.email ? 'border-red-500' : 'border-blue-900'} text-white rounded-xl outline-none focus:border-cyan-500`} />
               {errors.email && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase italic">{errors.email.message}</p>}
             </div>
-
             <div>
-              <input 
-                type="password" 
-                {...register("password")} 
-                placeholder="Senha de Acesso" 
-                className={`w-full p-3 bg-slate-800 border ${errors.password ? 'border-red-500' : 'border-blue-900'} text-white rounded-xl outline-none focus:border-cyan-500`} 
-              />
+              <input type="password" {...register("password")} placeholder="Senha de Acesso" className={`w-full p-3 bg-slate-800 border ${errors.password ? 'border-red-500' : 'border-blue-900'} text-white rounded-xl outline-none focus:border-cyan-500`} />
               {errors.password && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase italic">{errors.password.message}</p>}
             </div>
-            
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <select 
-                  {...register("department")} 
-                  className={`w-full p-3 bg-slate-800 border ${errors.department ? 'border-red-500' : 'border-blue-900'} text-white rounded-xl outline-none focus:border-cyan-500`}
-                >
-                  <option value="">Departamento</option>
-                  {departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
-                </select>
-                {errors.department && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase italic">{errors.department.message}</p>}
-              </div>
-              <div>
-                <select 
-                  {...register("role")} 
-                  className={`w-full p-3 bg-slate-800 border ${errors.role ? 'border-red-500' : 'border-blue-900'} text-white rounded-xl outline-none focus:border-cyan-500`}
-                >
-                  <option value="team_member">Staff</option>
-                  <option value="dept_manager">Gerente</option>
-                </select>
-                {errors.role && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase italic">{errors.role.message}</p>}
-              </div>
+              <select {...register("department")} className={`w-full p-3 bg-slate-800 border ${errors.department ? 'border-red-500' : 'border-blue-900'} text-white rounded-xl outline-none focus:border-cyan-500`}>
+                <option value="">Departamento</option>
+                {departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+              </select>
+              <select {...register("role")} className={`w-full p-3 bg-slate-800 border ${errors.role ? 'border-red-500' : 'border-blue-900'} text-white rounded-xl outline-none focus:border-cyan-500`}>
+                <option value="team_member">Staff</option>
+                <option value="dept_manager">Gerente</option>
+              </select>
             </div>
-            
             <button type="submit" disabled={isCreating} className="mt-2 py-3.5 bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-black rounded-xl transition disabled:opacity-50 uppercase text-xs tracking-widest cursor-pointer">
               {isCreating ? "Processando..." : "Criar Utilizador"}
             </button>
           </form>
         </ModalSmall>
 
-        {/* Modal: EDITAR MEMBRO (Com Validações) */}
+        {/* Modal: EDITAR MEMBRO */}
         <ModalSmall isOpen={editModal} onClose={() => setEditModal(false)} title="Editar Membro" icon="fas fa-user-edit">
           <form onSubmit={handleSubmitEdit(onUpdate)} className="flex flex-col gap-3">
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <input {...registerEdit("first_name")} className={`w-full p-3 bg-slate-800 border ${editErrors.first_name ? 'border-red-500' : 'border-blue-900'} text-white rounded-xl outline-none focus:border-cyan-500`} />
-                {editErrors.first_name && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase italic">{editErrors.first_name.message}</p>}
-              </div>
-              <div>
-                <input {...registerEdit("last_name")} className={`w-full p-3 bg-slate-800 border ${editErrors.last_name ? 'border-red-500' : 'border-blue-900'} text-white rounded-xl outline-none focus:border-cyan-500`} />
-                {editErrors.last_name && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase italic">{editErrors.last_name.message}</p>}
-              </div>
+              <input {...registerEdit("first_name")} className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-xl outline-none focus:border-cyan-500" />
+              <input {...registerEdit("last_name")} className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-xl outline-none focus:border-cyan-500" />
             </div>
-
-            <div>
-              <input {...registerEdit("email")} className={`w-full p-3 bg-slate-800 border ${editErrors.email ? 'border-red-500' : 'border-blue-900'} text-white rounded-xl outline-none focus:border-cyan-500`} />
-              {editErrors.email && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase italic">{editErrors.email.message}</p>}
-            </div>
-            
+            <input {...registerEdit("email")} className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-xl outline-none focus:border-cyan-500" />
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <select {...registerEdit("department")} className={`w-full p-3 bg-slate-800 border ${editErrors.department ? 'border-red-500' : 'border-blue-900'} text-white rounded-xl outline-none focus:border-cyan-500`}>
-                  {departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
-                </select>
-                {editErrors.department && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase italic">{editErrors.department.message}</p>}
-              </div>
-              <div>
-                <select {...registerEdit("role")} className={`w-full p-3 bg-slate-800 border ${editErrors.role ? 'border-red-500' : 'border-blue-900'} text-white rounded-xl outline-none focus:border-cyan-500`}>
-                  <option value="team_member">Staff</option>
-                  <option value="dept_manager">Gerente</option>
-                </select>
-                {editErrors.role && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase italic">{editErrors.role.message}</p>}
-              </div>
+              <select {...registerEdit("department")} className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-xl outline-none focus:border-cyan-500">
+                {departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+              </select>
+              <select {...registerEdit("role")} className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-xl outline-none focus:border-cyan-500">
+                <option value="team_member">Staff</option>
+                <option value="dept_manager">Gerente</option>
+              </select>
             </div>
             <button type="submit" disabled={isEditing} className="mt-2 py-3.5 bg-cyan-500 text-slate-900 font-black rounded-xl transition uppercase text-xs tracking-widest cursor-pointer">
               {isEditing ? "Salvando..." : "Salvar Alterações"}
@@ -337,10 +305,10 @@ export default function EquipaSuperAdmin() {
         {/* Modal: ELIMINAR */}
         <ModalSmall isOpen={deleteModal} onClose={() => setDeleteModal(false)} title="Remover da Equipa" icon="fas fa-trash-alt">
           <div className="text-center px-4">
-            <p className="text-slate-400 text-sm mb-6">Remover o acesso de <span className="text-white font-bold block">"{selected?.first_name} {selected?.last_name}"</span>?</p>
+            <p className="text-slate-400 text-sm mb-6">Deseja realmente remover o acesso de <span className="text-white font-bold block">"{selected?.first_name} {selected?.last_name}"</span>?</p>
             <div className="flex gap-3">
               <button onClick={() => setDeleteModal(false)} className="flex-1 py-3 bg-slate-800 text-white rounded-xl font-bold border border-blue-900 transition-all cursor-pointer">Cancelar</button>
-              <button onClick={handleDelete} className="flex-1 py-3 bg-red-500 hover:bg-red-400 text-white font-bold rounded-xl transition-all cursor-pointer">Eliminar</button>
+              <button onClick={handleDelete} className="flex-1 py-3 bg-red-500 hover:bg-red-400 text-white font-bold rounded-xl transition-all cursor-pointer shadow-lg shadow-red-500/20">Eliminar</button>
             </div>
           </div>
         </ModalSmall>
@@ -349,22 +317,22 @@ export default function EquipaSuperAdmin() {
         <ModalSmall isOpen={!!preview} onClose={() => setPreview(null)} title="Ficha do Utilizador" icon="fas fa-id-card">
           {preview && (
             <div className="flex flex-col items-center gap-4 py-2">
-               <div className="w-20 h-20 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-3xl text-cyan-500">
-                <i className="fas fa-user-shield"></i>
+               <div className="w-20 h-20 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-3xl text-cyan-500 shadow-inner">
+                <i className={preview.id === currentUserId ? "fas fa-user-shield text-amber-400" : "fas fa-user-circle"}></i>
               </div>
               <div className="text-center w-full space-y-4">
                 <h3 className="text-white font-bold text-xl">{preview.first_name} {preview.last_name}</h3>
                 <div className="bg-slate-900/50 p-4 rounded-2xl border border-blue-900/30 text-left space-y-3">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500 font-bold uppercase">Email</span>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Email</span>
                     <span className="text-slate-200">{preview.email}</span>
                   </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500 font-bold uppercase">Cargo</span>
-                    <span className="text-cyan-400 font-bold">{roleLabel(preview.role)}</span>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Cargo</span>
+                    <span className="text-cyan-400 font-bold uppercase">{roleLabel(preview.role)}</span>
                   </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500 font-bold uppercase">Departamento</span>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-500 font-bold uppercase tracking-widest text-[10px]">Departamento</span>
                     <span className="text-slate-200">{preview.department_name || "N/A"}</span>
                   </div>
                 </div>
