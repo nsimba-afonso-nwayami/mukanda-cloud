@@ -31,8 +31,6 @@ export default function EquipaSuperAdmin() {
   const [selected, setSelected] = useState(null);
   const [contextMenu, setContextMenu] = useState(null);
 
-  const longPressTimer = useRef(null);
-
   // Form Create
   const {
     register,
@@ -148,7 +146,7 @@ export default function EquipaSuperAdmin() {
       <title>Equipa | Mukanda Cloud</title>
       <SuperAdminLayout title="Gestão da Equipa">
 
-        {/* Toolbar Responsiva */}
+        {/* Toolbar */}
         <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-4 mb-6">
           <button 
             onClick={() => { reset(); setModalOpen(true); }} 
@@ -204,7 +202,7 @@ export default function EquipaSuperAdmin() {
           )}
         </div>
 
-        {/* Context Menu Padronizado */}
+        {/* Context Menu */}
         {contextMenu && (
           <div 
             className="fixed z-9999 bg-slate-900 border border-blue-900 rounded-xl w-48 shadow-2xl py-1" 
@@ -213,65 +211,124 @@ export default function EquipaSuperAdmin() {
             <div className="px-4 py-2 text-[10px] text-slate-500 border-b border-blue-900/50 truncate font-black uppercase">
               {selected?.first_name} {selected?.last_name}
             </div>
-            <button onClick={() => setPreview(selected)} className="w-full px-4 py-2.5 text-left text-sm hover:bg-cyan-500 hover:text-slate-900 flex items-center gap-3 transition-colors">
+            <button onClick={() => setPreview(selected)} className="w-full px-4 py-2.5 text-left text-sm hover:bg-cyan-500 hover:text-slate-900 flex items-center gap-3 transition-colors cursor-pointer">
               <i className="fas fa-eye text-xs"></i> Ver Perfil
             </button>
-            <button onClick={() => openEdit(selected)} className="w-full px-4 py-2.5 text-left text-sm hover:bg-cyan-500 hover:text-slate-900 flex items-center gap-3 transition-colors">
+            <button onClick={() => openEdit(selected)} className="w-full px-4 py-2.5 text-left text-sm hover:bg-cyan-500 hover:text-slate-900 flex items-center gap-3 transition-colors cursor-pointer">
               <i className="fas fa-edit text-xs"></i> Editar
             </button>
             <div className="h-px bg-blue-900/50 my-1"></div>
-            <button onClick={() => setDeleteModal(true)} className="w-full px-4 py-2.5 text-left text-sm hover:bg-red-500 text-red-400 hover:text-white flex items-center gap-3 transition-colors">
+            <button onClick={() => setDeleteModal(true)} className="w-full px-4 py-2.5 text-left text-sm hover:bg-red-500 text-red-400 hover:text-white flex items-center gap-3 transition-colors cursor-pointer">
               <i className="fas fa-trash-alt text-xs"></i> Eliminar
             </button>
           </div>
         )}
 
-        {/* Modal: NOVO */}
+        {/* Modal: NOVO UTILIZADOR (Com Validações) */}
         <ModalSmall isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Novo Utilizador" icon="fas fa-user-plus">
           <form onSubmit={handleSubmit(handleCreate)} className="grid grid-cols-1 gap-3">
             <div className="grid grid-cols-2 gap-3">
-              <input {...register("first_name")} placeholder="Nome" className="p-3 bg-slate-800 border border-blue-900 text-white rounded-xl outline-none focus:border-cyan-500" />
-              <input {...register("last_name")} placeholder="Apelido" className="p-3 bg-slate-800 border border-blue-900 text-white rounded-xl outline-none focus:border-cyan-500" />
+              <div>
+                <input 
+                  {...register("first_name")} 
+                  placeholder="Nome" 
+                  className={`w-full p-3 bg-slate-800 border ${errors.first_name ? 'border-red-500' : 'border-blue-900'} text-white rounded-xl outline-none focus:border-cyan-500`} 
+                />
+                {errors.first_name && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase italic">{errors.first_name.message}</p>}
+              </div>
+              <div>
+                <input 
+                  {...register("last_name")} 
+                  placeholder="Apelido" 
+                  className={`w-full p-3 bg-slate-800 border ${errors.last_name ? 'border-red-500' : 'border-blue-900'} text-white rounded-xl outline-none focus:border-cyan-500`} 
+                />
+                {errors.last_name && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase italic">{errors.last_name.message}</p>}
+              </div>
             </div>
-            <input {...register("email")} placeholder="Email Corporativo" className="p-3 bg-slate-800 border border-blue-900 text-white rounded-xl outline-none focus:border-cyan-500" />
-            <input type="password" {...register("password")} placeholder="Senha de Acesso" className="p-3 bg-slate-800 border border-blue-900 text-white rounded-xl outline-none focus:border-cyan-500" />
+
+            <div>
+              <input 
+                {...register("email")} 
+                placeholder="Email Corporativo" 
+                className={`w-full p-3 bg-slate-800 border ${errors.email ? 'border-red-500' : 'border-blue-900'} text-white rounded-xl outline-none focus:border-cyan-500`} 
+              />
+              {errors.email && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase italic">{errors.email.message}</p>}
+            </div>
+
+            <div>
+              <input 
+                type="password" 
+                {...register("password")} 
+                placeholder="Senha de Acesso" 
+                className={`w-full p-3 bg-slate-800 border ${errors.password ? 'border-red-500' : 'border-blue-900'} text-white rounded-xl outline-none focus:border-cyan-500`} 
+              />
+              {errors.password && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase italic">{errors.password.message}</p>}
+            </div>
             
             <div className="grid grid-cols-2 gap-3">
-              <select {...register("department")} className="p-3 bg-slate-800 border border-blue-900 text-white rounded-xl outline-none focus:border-cyan-500">
-                <option value="">Departamento</option>
-                {departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
-              </select>
-              <select {...register("role")} className="p-3 bg-slate-800 border border-blue-900 text-white rounded-xl outline-none focus:border-cyan-500">
-                <option value="team_member">Staff</option>
-                <option value="dept_manager">Gerente</option>
-              </select>
+              <div>
+                <select 
+                  {...register("department")} 
+                  className={`w-full p-3 bg-slate-800 border ${errors.department ? 'border-red-500' : 'border-blue-900'} text-white rounded-xl outline-none focus:border-cyan-500`}
+                >
+                  <option value="">Departamento</option>
+                  {departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+                </select>
+                {errors.department && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase italic">{errors.department.message}</p>}
+              </div>
+              <div>
+                <select 
+                  {...register("role")} 
+                  className={`w-full p-3 bg-slate-800 border ${errors.role ? 'border-red-500' : 'border-blue-900'} text-white rounded-xl outline-none focus:border-cyan-500`}
+                >
+                  <option value="team_member">Staff</option>
+                  <option value="dept_manager">Gerente</option>
+                </select>
+                {errors.role && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase italic">{errors.role.message}</p>}
+              </div>
             </div>
             
-            <button type="submit" disabled={isCreating} className="mt-2 py-3.5 bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-black rounded-xl transition disabled:opacity-50 uppercase text-xs tracking-widest">
+            <button type="submit" disabled={isCreating} className="mt-2 py-3.5 bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-black rounded-xl transition disabled:opacity-50 uppercase text-xs tracking-widest cursor-pointer">
               {isCreating ? "Processando..." : "Criar Utilizador"}
             </button>
           </form>
         </ModalSmall>
 
-        {/* Modal: EDITAR */}
+        {/* Modal: EDITAR MEMBRO (Com Validações) */}
         <ModalSmall isOpen={editModal} onClose={() => setEditModal(false)} title="Editar Membro" icon="fas fa-user-edit">
           <form onSubmit={handleSubmitEdit(onUpdate)} className="flex flex-col gap-3">
             <div className="grid grid-cols-2 gap-3">
-              <input {...registerEdit("first_name")} className="p-3 bg-slate-800 border border-blue-900 text-white rounded-xl outline-none focus:border-cyan-500" />
-              <input {...registerEdit("last_name")} className="p-3 bg-slate-800 border border-blue-900 text-white rounded-xl outline-none focus:border-cyan-500" />
+              <div>
+                <input {...registerEdit("first_name")} className={`w-full p-3 bg-slate-800 border ${editErrors.first_name ? 'border-red-500' : 'border-blue-900'} text-white rounded-xl outline-none focus:border-cyan-500`} />
+                {editErrors.first_name && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase italic">{editErrors.first_name.message}</p>}
+              </div>
+              <div>
+                <input {...registerEdit("last_name")} className={`w-full p-3 bg-slate-800 border ${editErrors.last_name ? 'border-red-500' : 'border-blue-900'} text-white rounded-xl outline-none focus:border-cyan-500`} />
+                {editErrors.last_name && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase italic">{editErrors.last_name.message}</p>}
+              </div>
             </div>
-            <input {...registerEdit("email")} className="p-3 bg-slate-800 border border-blue-900 text-white rounded-xl outline-none focus:border-cyan-500" />
+
+            <div>
+              <input {...registerEdit("email")} className={`w-full p-3 bg-slate-800 border ${editErrors.email ? 'border-red-500' : 'border-blue-900'} text-white rounded-xl outline-none focus:border-cyan-500`} />
+              {editErrors.email && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase italic">{editErrors.email.message}</p>}
+            </div>
             
             <div className="grid grid-cols-2 gap-3">
-              <select {...registerEdit("department")} className="p-3 bg-slate-800 border border-blue-900 text-white rounded-xl outline-none focus:border-cyan-500">
-                {departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
-              </select>
-              <select {...registerEdit("role")} className="p-3 bg-slate-800 border border-blue-900 text-white rounded-xl outline-none focus:border-cyan-500">
-                <option value="team_member">Staff</option>
-                <option value="dept_manager">Gerente</option>
-              </select>
+              <div>
+                <select {...registerEdit("department")} className={`w-full p-3 bg-slate-800 border ${editErrors.department ? 'border-red-500' : 'border-blue-900'} text-white rounded-xl outline-none focus:border-cyan-500`}>
+                  {departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+                </select>
+                {editErrors.department && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase italic">{editErrors.department.message}</p>}
+              </div>
+              <div>
+                <select {...registerEdit("role")} className={`w-full p-3 bg-slate-800 border ${editErrors.role ? 'border-red-500' : 'border-blue-900'} text-white rounded-xl outline-none focus:border-cyan-500`}>
+                  <option value="team_member">Staff</option>
+                  <option value="dept_manager">Gerente</option>
+                </select>
+                {editErrors.role && <p className="text-red-500 text-[10px] mt-1 font-bold uppercase italic">{editErrors.role.message}</p>}
+              </div>
             </div>
-            <button type="submit" disabled={isEditing} className="mt-2 py-3.5 bg-cyan-500 text-slate-900 font-black rounded-xl transition uppercase text-xs tracking-widest">
+            <button type="submit" disabled={isEditing} className="mt-2 py-3.5 bg-cyan-500 text-slate-900 font-black rounded-xl transition uppercase text-xs tracking-widest cursor-pointer">
               {isEditing ? "Salvando..." : "Salvar Alterações"}
             </button>
           </form>
@@ -282,8 +339,8 @@ export default function EquipaSuperAdmin() {
           <div className="text-center px-4">
             <p className="text-slate-400 text-sm mb-6">Remover o acesso de <span className="text-white font-bold block">"{selected?.first_name} {selected?.last_name}"</span>?</p>
             <div className="flex gap-3">
-              <button onClick={() => setDeleteModal(false)} className="flex-1 py-3 bg-slate-800 text-white rounded-xl font-bold border border-blue-900 transition-all">Cancelar</button>
-              <button onClick={handleDelete} className="flex-1 py-3 bg-red-500 hover:bg-red-400 text-white font-bold rounded-xl transition-all">Eliminar</button>
+              <button onClick={() => setDeleteModal(false)} className="flex-1 py-3 bg-slate-800 text-white rounded-xl font-bold border border-blue-900 transition-all cursor-pointer">Cancelar</button>
+              <button onClick={handleDelete} className="flex-1 py-3 bg-red-500 hover:bg-red-400 text-white font-bold rounded-xl transition-all cursor-pointer">Eliminar</button>
             </div>
           </div>
         </ModalSmall>
