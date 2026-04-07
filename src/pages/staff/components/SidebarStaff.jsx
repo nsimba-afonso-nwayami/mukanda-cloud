@@ -59,12 +59,7 @@ export default function SidebarStaff({ sidebarOpen, setSidebarOpen }) {
               <i className="fas fa-folder text-blue-700"></i>
               Arquivos
             </Link>
-
-            <Link to="/dashboard/staff/atividades" className={linkStyle}>
-              <i className="fas fa-clock-rotate-left text-blue-700"></i>
-              Atividades
-            </Link>
-
+            
             <Link to="/dashboard/staff/configuracoes" className={linkStyle}>
               <i className="fas fa-cogs text-blue-700"></i>
               Configurações
