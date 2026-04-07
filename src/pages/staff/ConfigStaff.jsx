@@ -1,43 +1,96 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import StaffLayout from "./components/StaffLayout";
-import ModalSmall from "./components/ModalSmall";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import toast from "react-hot-toast";
+
+// Importação dos Schemas e Services
+import { profileUpdateSchema, passwordUpdateSchema } from "../../validations/userSchema";
+import { updateUser } from "../../services/userService";
 
 export default function ConfigStaff() {
-  // Dados do superadmin
-  const [nome, setNome] = useState("Super Admin");
-  const [email, setEmail] = useState("admin@mukanda.com");
-  const [telefone, setTelefone] = useState("912345678");
+  const [userId, setUserId] = useState(null);
 
-  // Senha
-  const [senhaAtual, setSenhaAtual] = useState("");
-  const [novaSenha, setNovaSenha] = useState("");
-  const [confirmaSenha, setConfirmaSenha] = useState("");
+  // Form de Perfil
+  const {
+    register: regProfile,
+    handleSubmit: handleProfileSubmit,
+    setValue,
+    formState: { errors: profileErrors, isSubmitting: profileSubmitting },
+  } = useForm({
+    resolver: yupResolver(profileUpdateSchema),
+  });
 
-  // Modais de confirmação
-  const [modalSucesso, setModalSucesso] = useState(false);
-  const [modalErro, setModalErro] = useState(false);
-  const [mensagemErro, setMensagemErro] = useState("");
+  // Form de Senha
+  const {
+    register: regPass,
+    handleSubmit: handlePassSubmit,
+    reset: resetPass,
+    formState: { errors: passErrors, isSubmitting: passSubmitting },
+  } = useForm({
+    resolver: yupResolver(passwordUpdateSchema),
+  });
 
-  // Atualizar dados
-  const handleAtualizarDados = () => {
-    // Aqui você chamaria a API para atualizar
-    setModalSucesso(true);
-  };
+  /**
+   * 1. CARREGAR DADOS DO LOCALSTORAGE
+   */
+  useEffect(() => {
+    const userDataRaw = localStorage.getItem("user");
+    
+    if (userDataRaw) {
+      try {
+        const userData = JSON.parse(userDataRaw);
+        setUserId(userData.id);
 
-  // Atualizar senha
-  const handleAtualizarSenha = () => {
-    if (novaSenha !== confirmaSenha) {
-      setMensagemErro("A nova senha e a confirmação não coincidem!");
-      setModalErro(true);
-      return;
+        const nameParts = userData.name ? userData.name.split(" ") : ["", ""];
+        
+        setValue("first_name", nameParts[0]);
+        setValue("last_name", nameParts.slice(1).join(" ") || "");
+        setValue("email", userData.email);
+      } catch (error) {
+        console.error("Erro ao processar dados do localStorage", error);
+      }
     }
-    // Aqui você chamaria a API para atualizar a senha
-    setModalSucesso(true);
-    // Limpa campos de senha
-    setSenhaAtual("");
-    setNovaSenha("");
-    setConfirmaSenha("");
+  }, [setValue]);
+
+  /**
+   * 2. ATUALIZAR DADOS PESSOAIS
+   */
+  const onProfileSubmit = async (data) => {
+    try {
+      await updateUser(userId, data);
+      
+      // Atualiza o cache local para refletir a mudança no UI global
+      const userData = JSON.parse(localStorage.getItem("user"));
+      userData.name = `${data.first_name} ${data.last_name}`;
+      userData.email = data.email;
+      localStorage.setItem("user", JSON.stringify(userData));
+
+      toast.success("Perfil atualizado com sucesso!");
+    } catch (error) {
+      toast.error("Erro ao salvar alterações de perfil.");
+    }
   };
+
+  /**
+   * 3. ATUALIZAR SENHA
+   */
+  const onPassSubmit = async (data) => {
+    try {
+      await updateUser(userId, {
+        current_password: data.current_password,
+        password: data.password,
+      });
+      
+      toast.success("Senha alterada com sucesso!");
+      resetPass();
+    } catch (error) {
+      toast.error("Erro: Verifique se a senha atual está correta.");
+    }
+  };
+
+  const inputStyle = "w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg focus:border-cyan-500 focus:outline-none transition-all";
+  const labelStyle = "block text-xs text-slate-400 mb-1 ml-1 uppercase font-bold tracking-tighter";
 
   return (
     <>
@@ -45,92 +98,72 @@ export default function ConfigStaff() {
       <StaffLayout title="Configurações">
         <div className="max-w-2xl mx-auto p-4 flex flex-col gap-8">
 
-          {/* Atualizar Dados */}
-          <div className="bg-slate-900 p-6 rounded-xl border border-blue-900">
-            <h2 className="text-xl font-semibold text-slate-200 mb-4">Atualizar Dados</h2>
-            <input
-              type="text"
-              placeholder="Nome"
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-4"
-            />
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-4"
-            />
-            <input
-              type="text"
-              placeholder="Telefone"
-              value={telefone}
-              onChange={(e) => setTelefone(e.target.value)}
-              className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-4"
-            />
-            <button
-              onClick={handleAtualizarDados}
-              className="w-full py-2 bg-cyan-500 text-slate-900 font-semibold rounded-lg cursor-pointer"
-            >
-              Atualizar Dados
-            </button>
-          </div>
+          {/* SEÇÃO: DADOS PESSOAIS */}
+          <section className="bg-slate-900 p-6 rounded-xl border border-blue-900 shadow-lg">
+            <h2 className="text-sm font-bold text-cyan-500 mb-6 uppercase tracking-widest flex items-center gap-2">
+              <i className="fas fa-user-cog text-xs"></i> Informações da Conta
+            </h2>
+            <form onSubmit={handleProfileSubmit(onProfileSubmit)} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelStyle}>Primeiro Nome</label>
+                  <input {...regProfile("first_name")} className={inputStyle} />
+                  {profileErrors.first_name && <p className="text-red-500 text-xs mt-1">{profileErrors.first_name.message}</p>}
+                </div>
+                <div>
+                  <label className={labelStyle}>Apelido</label>
+                  <input {...regProfile("last_name")} className={inputStyle} />
+                  {profileErrors.last_name && <p className="text-red-500 text-xs mt-1">{profileErrors.last_name.message}</p>}
+                </div>
+              </div>
+              <div>
+                <label className={labelStyle}>Endereço de Email</label>
+                <input {...regProfile("email")} className={inputStyle} />
+                {profileErrors.email && <p className="text-red-500 text-xs mt-1">{profileErrors.email.message}</p>}
+              </div>
+              <button 
+                disabled={profileSubmitting || !userId} 
+                className="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-bold rounded-lg transition-all shadow-md active:scale-[0.98] cursor-pointer"
+              >
+                {profileSubmitting ? <i className="fas fa-sync animate-spin mr-2"></i> : null}
+                {profileSubmitting ? "Salvando..." : "Salvar Alterações"}
+              </button>
+            </form>
+          </section>
 
-          {/* Atualizar Senha */}
-          <div className="bg-slate-900 p-6 rounded-xl border border-blue-900">
-            <h2 className="text-xl font-semibold text-slate-200 mb-4">Atualizar Senha</h2>
-            <input
-              type="password"
-              placeholder="Senha Atual"
-              value={senhaAtual}
-              onChange={(e) => setSenhaAtual(e.target.value)}
-              className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-4"
-            />
-            <input
-              type="password"
-              placeholder="Nova Senha"
-              value={novaSenha}
-              onChange={(e) => setNovaSenha(e.target.value)}
-              className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-4"
-            />
-            <input
-              type="password"
-              placeholder="Confirmar Nova Senha"
-              value={confirmaSenha}
-              onChange={(e) => setConfirmaSenha(e.target.value)}
-              className="w-full p-3 bg-slate-800 border border-blue-900 text-white rounded-lg mb-4"
-            />
-            <button
-              onClick={handleAtualizarSenha}
-              className="w-full py-2 bg-cyan-500 text-slate-900 font-semibold rounded-lg cursor-pointer"
-            >
-              Atualizar Senha
-            </button>
-          </div>
-
+          {/* SEÇÃO: ALTERAR SENHA */}
+          <section className="bg-slate-900 p-6 rounded-xl border border-blue-900 shadow-lg">
+            <h2 className="text-sm font-bold text-cyan-500 mb-6 uppercase tracking-widest flex items-center gap-2">
+              <i className="fas fa-shield-alt text-xs"></i> Segurança
+            </h2>
+            <form onSubmit={handlePassSubmit(onPassSubmit)} className="space-y-4">
+              <div>
+                <label className={labelStyle}>Senha Atual</label>
+                <input type="password" {...regPass("current_password")} className={inputStyle} />
+                {passErrors.current_password && <p className="text-red-500 text-xs mt-1">{passErrors.current_password.message}</p>}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelStyle}>Nova Senha</label>
+                  <input type="password" {...regPass("password")} className={inputStyle} />
+                  {passErrors.password && <p className="text-red-500 text-xs mt-1">{passErrors.password.message}</p>}
+                </div>
+                <div>
+                  <label className={labelStyle}>Confirmar Nova Senha</label>
+                  <input type="password" {...regPass("confirmaSenha")} className={inputStyle} />
+                  {passErrors.confirmaSenha && <p className="text-red-500 text-xs mt-1">{passErrors.confirmaSenha.message}</p>}
+                </div>
+              </div>
+              <button 
+                disabled={passSubmitting || !userId} 
+                className="w-full py-3 border-2 border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-slate-900 font-bold rounded-lg transition-all active:scale-[0.98] cursor-pointer"
+              >
+                {passSubmitting ? <i className="fas fa-sync animate-spin mr-2"></i> : null}
+                {passSubmitting ? "Processando..." : "Atualizar Senha de Acesso"}
+              </button>
+            </form>
+          </section>
         </div>
-
-        {/* Modal Sucesso */}
-        <ModalSmall
-          isOpen={modalSucesso}
-          onClose={() => setModalSucesso(false)}
-          title="Sucesso"
-          icon="fas fa-check"
-        >
-          <p className="text-slate-200">Atualização realizada com sucesso!</p>
-        </ModalSmall>
-
-        {/* Modal Erro */}
-        <ModalSmall
-          isOpen={modalErro}
-          onClose={() => setModalErro(false)}
-          title="Erro"
-          icon="fas fa-exclamation-triangle"
-        >
-          <p className="text-red-400">{mensagemErro}</p>
-        </ModalSmall>
-
       </StaffLayout>
     </>
   );
