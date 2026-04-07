@@ -45,8 +45,7 @@ export default function HeaderStaff({ sidebarOpen, setSidebarOpen, title }) {
         </div>
 
         {/* Avatar */}
-        <Link
-          to="/dashboard/superadmin/configuracoes"
+        <div
           className="
             w-9 h-9
             bg-slate-900 border border-blue-900/40
@@ -59,7 +58,7 @@ export default function HeaderStaff({ sidebarOpen, setSidebarOpen, title }) {
           <span className="text-cyan-500 text-xs font-bold">
             {user?.initials || "MC"}
           </span>
-        </Link>
+        </div>
       </div>
     </header>
   );
